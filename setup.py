@@ -9,13 +9,14 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="fixtodict",
-    version="1.0.2",
+    version="1.1.0",
     description='FIX Dictionary generator tool',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/fixipe/fixtodict',
     author='Filippo Costa @neysofu',
     author_email='filippocosta.italy@gmail.com',
+    license="Apache Software License",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -26,7 +27,11 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='FIX protocol XML fintech finance trading',
-    packages=find_packages(where='src'),
+    packages=["fixtodict"],
     python_requires='>=3.5',
     install_requires=['nltk', "click"],
+    entry_points="""
+    [console_scripts]
+    fixtodict=fixtodict:main
+    """
 )
