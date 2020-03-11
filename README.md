@@ -1,5 +1,8 @@
 # FIXtodict
 
+![PyPI - Version](https://img.shields.io/pypi/v/fixtodict)
+![PyPI - License](https://img.shields.io/pypi/l/fixtodict)
+
 FIXtodict is a FIX Dictionary generator tool.
 
 The program performs data enhancing and data sanitazion on raw FIX Repository files. It allows you to  The resulting data will feature:
