@@ -2,7 +2,7 @@
 
 FIXtodict is a FIX Dictionary generator tool.
 
-FIXtodict program performs data enhancing and data sanitazion on raw FIX Repository files. The resulting data will feature:
+The program performs data enhancing and data sanitazion on raw FIX Repository files. It allows you to  The resulting data will feature:
 
 - High-quality Markdown documentation obtained from several sources, plus
   minor improvements, e.g.
@@ -21,6 +21,14 @@ Developers working with the FIX Protocol can really benefit from higher-quality 
 
 In short, FIXtodict makes it much easier to work with the FIX protocol.
 
-# License
+## How to use
 
-Copyright (c) 2020, Filippo Costa. This software is released under the terms of [Apache License 2](https://www.apache.org/licenses/LICENSE-2.0).
+First, you must install FIXtodict:
+
+    $ pip3 install fixtodict
+
+You can now type `fixtodict --help` for thorough usage information.
+
+## License
+
+Copyright (c) 2020, Filippo Costa. This software is released under the terms of [Apache License 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
