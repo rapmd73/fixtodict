@@ -30,7 +30,18 @@ First, you must install FIXtodict:
 
     $ pip3 install fixtodict
 
-You can now type `fixtodict --help` for thorough usage information.
+You can now type `fixtodict --help` for thorough usage information. Here's an example:
+
+    $ fixtodict --improve-docs=1 fix_repository/Unified/ empty/
+    Written to 'empty/fix-4-0.json'.
+    Written to 'empty/fix-4-1.json'.
+    Written to 'empty/fix-4-2.json'.
+    Written to 'empty/fix-4-3.json'.
+    Written to 'empty/fix-4-4.json'.
+    Written to 'empty/fix-5-0.json'.
+    Written to 'empty/fix-5-0-sp1.json'.
+    Written to 'empty/fixt-1-1.json'.
+    Written to 'empty/fix-5-0-sp2.json'.
 
 ## License
 
