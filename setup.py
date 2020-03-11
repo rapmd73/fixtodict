@@ -19,7 +19,6 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Fintech',
         'License :: OSI Approved :: Apache License',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
