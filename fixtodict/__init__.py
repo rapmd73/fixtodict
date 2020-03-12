@@ -1,1 +1,2 @@
-from .fixtodict import *
+from .version import __version__
+from .cli import main

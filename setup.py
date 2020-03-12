@@ -1,15 +1,20 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from os import path
 from io import open
 
-here = path.abspath(path.dirname(__file__))
+VERSION = {}
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+HERE = path.abspath(path.dirname(__file__))
+
+with open(path.join(HERE, 'fixtodict', "version.py"), encoding='utf-8') as f:
+    exec(f.read(), VERSION)
+
+with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name="fixtodict",
-    version="1.1.0",
+    version=VERSION["__version__"],
     description='FIX Dictionary generator tool',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -32,6 +37,8 @@ setup(
     install_requires=['nltk', "click"],
     entry_points="""
     [console_scripts]
-    fixtodict=fixtodict:main
-    """
+    fixtodict=fixtodict.cli:main
+    """,
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )
