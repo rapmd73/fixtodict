@@ -10,7 +10,7 @@ The program performs data enhancing and data sanitazion on raw FIX Repository fi
 - High-quality Markdown documentation obtained from several sources, plus
   minor improvements, e.g.
   * links to ISO standards,
-  * RFC 2119 terms highlight,
+  * RFC 2119 terms capitalization,
   * links for internal navigation,
   * markup, bold text, etc.
 - Embedded documentation strings (instead of separate files, like the

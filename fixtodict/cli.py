@@ -7,7 +7,7 @@ import json
 import os
 from .version import __version__
 from .api import xml_to_fix_dictionary, parse_protocol_version
-from .docs import xml_to_docs, beautify_docs
+from .docs import xml_to_docs, markdownify_docs, needs_docs, embed_docs_into_data
 from .utils import iso8601_local, target_filename
 
 LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
@@ -36,6 +36,15 @@ def read_src(src: str):
         exit(-1)
 
 
+def metadata():
+    return {
+        "version": __version__,
+        "legal": LEGAL_INFO,
+        "command": " ".join(sys.argv),
+        "generated": iso8601_local()
+    }
+
+
 @click.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
@@ -60,7 +69,7 @@ def read_src(src: str):
 @click.option(
     "--minify", "-m",
     default=False,
-    help="Minify output JSON. Off by default",
+    help="Minify output JSON. Off by default.",
     type=click.BOOL,
 )
 @click.version_option(__version__)
@@ -80,7 +89,7 @@ def main(src, dst, improve_docs, ep, docs_path, minify):
     - High-quality Markdown documentation obtained from several sources, plus
       minor improvements, e.g.
       * links to ISO standards,
-      * RFC 2119 terms highlight,
+      * RFC 2119 terms capitalization,
       * links for internal navigation,
       * markup, bold text, etc.
     - Embedded documentation strings (instead of separate files, like the
@@ -113,17 +122,18 @@ def main(src, dst, improve_docs, ep, docs_path, minify):
     # We now have definitions for several versions of the protocol. Each must
     # be processed separately.
     for repo_xml in main_xml:
-        version = repo_xml.get("version")
-        docs_xml = read_docs(docs_path or src, version)
-        docs = xml_to_docs(docs_xml)
-        result = {"FIXtodict": {
-            "version": __version__,
-            "legal": LEGAL_INFO,
-            "command": " ".join(sys.argv),
-            "generated": iso8601_local()
-        }}
-        result.update(xml_to_fix_dictionary(repo_xml, docs))
-        filename = target_filename(dst, version)
+        result = {"FIXtodict": metadata()}
+        result.update(xml_to_fix_dictionary(repo_xml))
+        fix_v = repo_xml.get("version")
+        # Basic repository input files already contain all necessary
+        # documentation.
+        if needs_docs(result):
+            docs_xml = read_docs(docs_path or src, fix_v)
+            docs = xml_to_docs(docs_xml)
+            if improve_docs:
+                docs = markdownify_docs(docs)
+            result = embed_docs_into_data(result, docs)
+        filename = target_filename(dst, fix_v)
         with open(filename, "w") as f:
             f.write(json.dumps(result, indent=json_indent))
             print("-- Written to '{}'".format(filename))

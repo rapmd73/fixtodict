@@ -12,7 +12,7 @@ def xml_to_datatypes(root: Element):
         base_datatype = child.get("baseType")
         if base_datatype:
             data[name]["baseDatatype"] = base_datatype
-        data[name]["description"] = child.get("text")
+        data[name]["description"] = child.get("textId")
         xml_details = child.find("XML")
         if xml_details is not None:
             data[name]["xmlBaseDatatype"] = xml_details.get("base")
@@ -29,7 +29,7 @@ def xml_to_sections(root: Optional[Element]):
     for child in sorted(root, key=lambda c: c.get("id")):
         name = child.get("id")
         data[name] = {}
-        data[name]["description"] = child.get("text")
+        data[name]["description"] = child.get("textId")
     return data
 
 
@@ -64,7 +64,7 @@ def xml_to_fields(root: Element):
         name = child.get("name")
         data[name] = {}
         data[name]["id"] = child.get("id")
-        data[name]["description"] = child.get("text")
+        data[name]["description"] = child.get("textId")
         data[name]["datatype"] = child.get("type")
         data[name]["enums"] = child.get("type")
         if len(child) > 0:
@@ -74,7 +74,7 @@ def xml_to_fields(root: Element):
             data[name]["enums"][val] = {}
             e = data[name]["enums"][val]
             e["name"] = subchild.get("symbolicName")
-            e["description"] = subchild.get("text")
+            e["description"] = subchild.get("textId")
             e["added"] = protocol_from_xml_attrs({
                 **child.attrib,
                 **subchild.attrib
@@ -97,7 +97,7 @@ def xml_to_components(root: Element):
         data[name]["category"] = child.get("category")
         data[name]["kind"] = child.get("type")
         data[name]["isRepeating"] = child.get("repeating") == "1"
-        data[name]["description"] = child.get("text")
+        data[name]["description"] = child.get("textId")
         data[name]["contents"] = xml_to_message_entities(child)
         try:
             data[name]["requiredFixml"] = item["@notReqXML"] == "0"
@@ -131,6 +131,6 @@ def xml_to_message_entities(root: Element):
         data[i]["name"] = child.get("name")
         data[i]["kind"] = "field" if child.tag == "fieldRef" else "component"
         data[i]["required"] = child.get("required") == "1"
-        data[i]["description"] = child.get("text")
+        data[i]["description"] = child.get("textId")
         i += 1
     return data

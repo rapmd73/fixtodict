@@ -1,6 +1,6 @@
 import unittest
 from xml.etree import ElementTree
-from fixtodict.pipeline import *
+from fixtodict.repo_basic import *
 
 
 class TestBasicRepository(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestBasicRepository(unittest.TestCase):
         for (s, expected) in zip(TestBasicRepository.ABBREVIATIONS_XML,
                                  TestBasicRepository.ABBREVIATIONS_DICT):
             xml = ElementTree.fromstring(s)
-            actual = basic_abbreviation(xml)
+            actual = xml_to_abbreviation(xml)
             self.assertEqual(actual, expected)
 
     DATATYPES_XML = [
@@ -94,7 +94,7 @@ class TestBasicRepository(unittest.TestCase):
         for (s, expected) in zip(TestBasicRepository.DATATYPES_XML,
                                  TestBasicRepository.DATATYPES_DICT):
             xml = ElementTree.fromstring(s)
-            actual = basic_datatype(xml)
+            actual = xml_to_datatype(xml)
             self.assertEqual(actual, expected)
 
     FIELDS_XML = [
@@ -121,5 +121,5 @@ class TestBasicRepository(unittest.TestCase):
         for (s, expected) in zip(TestBasicRepository.FIELDS_XML,
                                  TestBasicRepository.FIELDS_DICT):
             xml = ElementTree.fromstring(s)
-            actual = basic_field(xml)
+            actual = xml_to_field(xml)
             self.assertEqual(actual, expected)

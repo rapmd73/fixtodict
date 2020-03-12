@@ -31,8 +31,7 @@ def generate_links(v_fields: List[str]):
     }
 
 
-def xml_to_fix_dictionary(root: Element, docs):
-    #root = embed_docs(root, docs)
+def xml_to_fix_dictionary(root: Element):
     version = root.get("version")
     return {
         "version": version,

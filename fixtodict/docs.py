@@ -11,12 +11,12 @@ def datatype_link(dt: str):
     return '[`{0}`](#/datatypes/{0})'.format(dt)
 
 
-def beautify_docs(content: str, kind: str):
+def beautify_docs(data, kind: str):
     # Detect abbreviations. They have very short descriptions and don't require
     # additional preprocessing.
     if kind == "AT":
-        return content
-    words = nltk.word_tokenize(content, preserve_line=True)
+        return data
+    words = nltk.word_tokenize(data, preserve_line=True)
     # Link references to primitive datatypes.
     if len(words) >= 2 and words[1] == "field":
         words[0] = datatype_link(words[0])
@@ -56,12 +56,23 @@ def xml_to_docs(root: Element):
 def markdownify_docs(docs):
     for (key, val) in docs.items():
         kind = key.split("_")[0]
-        docs[key] = "\n".join([beautify_docs(p, kind) for p in val])
+        docs[key] = "\n".join([beautify_docs(p, kind)
+                               for p in val["paragraphs"]])
+    return docs
 
 
-def embed_docs(root_element: Element, docs):
-    for child in root_element:
-        if "textId" in child.keys():
-            child.set("text", docs[child.get("textId")])
-        embed_docs(child, docs)
-    return root_element
+def embed_docs_into_data(data, docs):
+    if isinstance(data, dict):
+        for (key, val) in data.items():
+            if key == "description":
+                data[key] = docs[val]
+            else:
+                data[key] = embed_docs_into_data(val, docs)
+    elif isinstance(data, list):
+        data = [embed_docs_into_data(x, docs) for x in data]
+    return data
+
+
+def needs_docs(fix_dict):
+    # TODO
+    return True
