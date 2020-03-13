@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import click
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -5,44 +7,43 @@ import test
 import sys
 import json
 import os
-from .version import __version__
-from .api import xml_to_fix_dictionary, parse_protocol_version
-from .docs import xml_to_docs, markdownify_docs, needs_docs, embed_docs_into_data
-from .utils import iso8601_local, target_filename
 
-LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
-
-
-def read_docs(parent_dir: str, version: str):
-    path = os.path.join(parent_dir, "{}_en_phrases.xml".format(version))
-    try:
-        return ElementTree.parse(path).getroot()
-    except IOError:
-        print("Error: Couldn't locate file '{}'.")
-        exit(-1)
+from api import xml_files_to_fix_dict
+from docs import xml_to_docs, markdownify_docs, needs_docs, embed_docs_into_data
+from utils import target_filename
+from version import __version__
 
 
-def read_src(src: str):
-    path = os.path.join(src, "FixRepository.xml")
-    if not os.path.isfile(path):
-        path = os.path.join(src, "IntermediateRepository.xml")
-    if path is None:
-        print("Error: Can't locate a valid FIX Repository file.")
-        exit(-1)
+def err(path):
+    print("Error: Invalid XML file.")
+    exit(-1)
+
+
+def read_xml_files(src: str):
+    path = os.path.join(src, "Messages.xml")
+    if os.path.exists(path):
+        return {
+            "abbreviations": read_xml_root(src, "Abbreviations.xml"),
+            "categories": read_xml_root(src, "Categories.xml"),
+            "components": read_xml_root(src, "Components.xml"),
+            "datatypes": read_xml_root(src, "Datatypes.xml"),
+            "enums": read_xml_root(src, "Enums.xml", opt=False),
+            "fields": read_xml_root(src, "Fields.xml", opt=False),
+            "messages": read_xml_root(src, "Messages.xml", opt=False),
+            "msg_contents": read_xml_root(src, "MsgContents.xml", opt=False),
+            "sections": read_xml_root(src, "Sections.xml"),
+        }
+    return None
+
+
+def read_xml_root(src, filename, opt=True):
+    path = os.path.join(src, filename)
     try:
         return ElementTree.parse(path).getroot()
     except:
-        print("Error: Invalid XML file.")
-        exit(-1)
-
-
-def metadata():
-    return {
-        "version": __version__,
-        "legal": LEGAL_INFO,
-        "command": " ".join(sys.argv),
-        "generated": iso8601_local()
-    }
+        if not opt:
+            err(path)
+    return None
 
 
 @click.command()
@@ -55,13 +56,7 @@ def metadata():
     type=click.Path(exists=True),
 )
 @click.option(
-    "--docs",
-    "docs_path",
-    default="",
-    help="Alternative source directory for documentation files. Same as <SRC> by default.",
-    type=click.Path())
-@click.option(
-    "--improve-docs", "-i",
+    "--markdownify", "-m",
     default=False,
     help="Perform data enhancing on documentation strings. Off by default.",
     type=click.BOOL,
@@ -73,7 +68,7 @@ def metadata():
     type=click.BOOL,
 )
 @click.version_option(__version__)
-def main(src, dst, improve_docs, ep, docs_path, minify):
+def main(src, dst, ep, markdownify, minify):
     """
     FIX Dictionary generator tool.
 
@@ -102,38 +97,33 @@ def main(src, dst, improve_docs, ep, docs_path, minify):
     Moreover, all output data is valid JSON for easier consumption.
 
     <SRC> is a directory pointing to input FIX Repository data. Specifically,
-    inside <SRC> the program will look for any of these two files (in this
-    order; they are treated equally):
+    this program will look for the following files inside <SRC>:
 
     \b
-    - `FixRepository.xml` (unified FIX Repository).
-    - `IntermediateRepository.xml` (intermediate FIX Repository).
+    - `Abbreviation.xml`
+    - `Components.xml`
+    - `Datatypes.xml`
+    - `Fields.xml`
+    - `MsgContents.xml`
+    - `MsgType.xml`
 
-    <SRC> should also contain appropriate documentation files (e.g.
-    `FIX.4.4_en_phrases.xml`). Future versions of this program might look for
-    additional files.
+    Future versions of this program might look for additional files.
 
     Output data is written to <DST>, which must be an existing directory.
     Filenames are properly generated according to FIX protocol version. Old
     files in <DST> might get overwritten WITHOUT BACKUP!
     """
     json_indent = None if minify else 2
-    main_xml = read_src(src)
-    # We now have definitions for several versions of the protocol. Each must
-    # be processed separately.
-    for repo_xml in main_xml:
-        result = {"FIXtodict": metadata()}
-        result.update(xml_to_fix_dictionary(repo_xml))
-        fix_v = repo_xml.get("version")
-        # Basic repository input files already contain all necessary
-        # documentation.
-        if needs_docs(result):
-            docs_xml = read_docs(docs_path or src, fix_v)
-            docs = xml_to_docs(docs_xml)
-            if improve_docs:
-                docs = markdownify_docs(docs)
-            result = embed_docs_into_data(result, docs)
-        filename = target_filename(dst, fix_v)
-        with open(filename, "w") as f:
-            f.write(json.dumps(result, indent=json_indent))
-            print("-- Written to '{}'".format(filename))
+    xml_files = read_xml_files(src)
+    result = xml_files_to_fix_dict(xml_files)
+    if markdownify:
+        result = markdownify_docs(result)
+    # Write output to file.
+    filename = target_filename(dst, result["version"])
+    with open(filename, "w") as f:
+        f.write(json.dumps(result, indent=json_indent))
+        print("-- Written to '{}'".format(filename))
+
+
+if __name__ == "__main__":
+    main()

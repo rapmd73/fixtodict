@@ -2,21 +2,21 @@ from setuptools import setup
 from os import path
 from io import open
 
-VERSION = {}
-
 HERE = path.abspath(path.dirname(__file__))
 
-with open(path.join(HERE, 'fixtodict', "version.py"), encoding='utf-8') as f:
-    exec(f.read(), VERSION)
-
 with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+    LONG_DESCRIPTION = f.read()
+
+version = {}
+
+with open(path.join(HERE, 'fixtodict', "version.py"), encoding='utf-8') as f:
+    exec(f.read(), version)
 
 setup(
     name="fixtodict",
-    version=VERSION["__version__"],
+    version=version["__version__"],
     description='FIX Dictionary generator tool',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     url='https://github.com/fixipe/fixtodict',
     author='Filippo Costa @neysofu',

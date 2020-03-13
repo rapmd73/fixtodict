@@ -3,37 +3,41 @@ import datetime
 from typing import List
 
 
-def parse_protocol_version(val: str, ep: str = "-1"):
-    """
-    Parses a string that represents a FIX protocol version into its original
-    fields.
-    """
+def parse_protocol_version(val: str, ep=None):
     # Explicit servicepack tagging.
+    if "_EP" in val:
+        val, ep = tuple(val.split("_EP"))
     if "SP" in val:
-        protocol, servicepack = tuple(val.split("SP"))
+        val, servicepack = tuple(val.split("SP"))
     else:
-        protocol, servicepack = val, "0"
-    protocol, major, minor = tuple(protocol.split("."))
+        servicepack = "0"
+    protocol, major, minor = tuple(val.split("."))
     protocol = protocol.lower()
-    if ep == "-1":
-        return [protocol, major, minor, servicepack]
+    return {
+        "fix": protocol,
+        "major": major,
+        "minor": minor,
+        "sp": servicepack,
+        "ep": ep
+    }
+
+
+def version_from_xml_attrs(d: dict, prefix="added"):
+    main = prefix
+    ep = prefix + "EP"
+    if main in d and ep in d:
+        return parse_protocol_version(d[main], d[ep])
+    elif main in d:
+        return parse_protocol_version(d[main])
     else:
-        return [protocol, major, minor, servicepack, ep]
+        return None
 
 
-def protocol_from_xml_attrs(d: dict):
-    if "addedEP" in d:
-        return parse_protocol_version(d["added"], d["addedEP"])
-    else:
-        return parse_protocol_version(d["added"])
-
-
-def target_filename(target_dir, version: str):
-    v_fields = parse_protocol_version(version)
+def target_filename(target_dir, v):
     return os.path.join(
         target_dir, "{}-{}-{}{}.json".format(
-            v_fields[0], v_fields[1], v_fields[2],
-            "-sp" + v_fields[3] if v_fields[3] != "0" else ""))
+            v["fix"], v["major"], v["minor"],
+            "-sp" + v["sp"]))
 
 
 def iso8601_local():

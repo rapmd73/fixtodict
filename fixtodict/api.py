@@ -1,49 +1,52 @@
 import os
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from typing import List, Optional
-from .utils import parse_protocol_version
-from .repo_unified import (xml_to_abbreviations, xml_to_categories, xml_to_components,
-                           xml_to_datatypes, xml_to_fields, xml_to_message_entities, xml_to_messages, xml_to_sections)
+from typing import Optional, Dict
+import sys
+
+from basic_repository import (xml_to_abbreviations, xml_to_categories, xml_to_components, xml_to_msg_contents, xml_to_enums,
+                              xml_to_datatypes, xml_to_fields, xml_to_messages, xml_to_sections)
+from utils import iso8601_local, target_filename, parse_protocol_version
+from version import __version__
 
 
-def onixs_dictionary_link(v_fields: List[str]):
-    return "https://www.onixs.biz/fix-dictionary/{}{}.{}.SP{}/index.html".format(
-        "" if v_fields[0] == "fix" else v_fields[0], *v_fields[1:])
+LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
 
 
-def fixopaedia_dictionary_link(v_fields: List[str]):
-    return "https://btobits.com/fixopaedia/fixdict{}{}{}/index.html".format(
-        v_fields[1], v_fields[2],
-        "" if int(v_fields[3]) == 0 else "-sp{}".format(v_fields[3]))
+def fixipe_dictionary_link(version):
+    return "https://fixipe.com/#/explore/{fix}/{major}.{minor}/servicepack/{sp}".format(
+        **version)
 
 
-def fixipe_dictionary_link(v_fields: List[str]):
-    return "https://fixipe.com/#/explore/{}/{}.{}/servicepack/{}".format(
-        *v_fields)
-
-
-def generate_links(v_fields: List[str]):
+def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
+    version = parse_protocol_version(xml_files["fields"].get("version"))
+    abbreviations = xml_to_abbreviations(xml_files["abbreviations"])
+    datatypes = xml_to_datatypes(xml_files["datatypes"])
+    sections = xml_to_sections(xml_files["sections"])
+    categories = xml_to_categories(xml_files["categories"])
+    fields = xml_to_fields(xml_files["fields"])
+    components = xml_to_components(xml_files["components"])
+    messages = xml_to_messages(xml_files["messages"])
+    enums = xml_to_enums(xml_files["enums"])
+    msg_contents = xml_to_msg_contents(xml_files["msg_contents"])
+    for (key, value) in fields.items():
+        if "enum" in value:
+            value["enum"] = enums[value["enum"]]
     return {
-        "onixsDictionary": onixs_dictionary_link(v_fields),
-        "fixipeDictionary": fixipe_dictionary_link(v_fields),
-        "fixoapediaDictionary": fixopaedia_dictionary_link(v_fields),
-    }
-
-
-def xml_to_fix_dictionary(root: Element):
-    version = root.get("version")
-    return {
+        "fixtodict": {
+            "version": __version__,
+            "legal": LEGAL_INFO,
+            "command": " ".join(sys.argv),
+            "generated": iso8601_local(),
+            "fixipe": fixipe_dictionary_link(version)
+        },
         "version": version,
-        "fixml": root.get("fixml") == "1",
-        # Let's ignore the "specUrl" attributes becauses it gives 404.
-        "links": generate_links(parse_protocol_version(version)),
-        # "ep": beautify_extension_packs(root.find("manifest")),
-        "abbreviations": xml_to_abbreviations(root.find("abbreviations")),
-        "datatypes": xml_to_datatypes(root.find("datatypes")),
-        "sections": xml_to_sections(root.find("sections")),
-        "categories": xml_to_categories(root.find("categories")),
-        "fields": xml_to_fields(root.find("fields")),
-        "components": xml_to_components(root.find("components")),
-        "messages": xml_to_messages(root.find("messages")),
+        "abbreviations": abbreviations,
+        "datatypes": datatypes,
+        "sections": sections,
+        "categories": categories,
+        "fields": fields,
+        "components": components,
+        "messages": messages,
+        "msg_contents": msg_contents,
     }

@@ -1,7 +1,12 @@
 from typing import Optional
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from .utils import protocol_from_xml_attrs
+
+from utils import version_from_xml_attrs
+
+
+def xml_to_manifest(root: Element):
+    return {}
 
 
 def xml_to_datatypes(root: Element):
@@ -18,7 +23,7 @@ def xml_to_datatypes(root: Element):
             data[name]["xmlBaseDatatype"] = xml_details.get("base")
             data[name]["xmlBuiltIn"] = xml_details.get("builtin") == "1"
             data[name]["xmlDescription"] = child.get("text")
-        data[name]["added"] = protocol_from_xml_attrs(child.attrib)
+        data[name]["added"] = version_from_xml_attrs(child.attrib)
     return data
 
 
@@ -54,7 +59,7 @@ def xml_to_abbreviations(root: Optional[Element]):
         data[name] = {}
         # "usage" attribute doesn't seem used at all, so let's ignore it.
         data[name]["term"] = child.get("text")
-        data[name]["added"] = protocol_from_xml_attrs(child.attrib)
+        data[name]["added"] = version_from_xml_attrs(child.attrib)
     return data
 
 
@@ -75,7 +80,7 @@ def xml_to_fields(root: Element):
             e = data[name]["enums"][val]
             e["name"] = subchild.get("symbolicName")
             e["description"] = subchild.get("textId")
-            e["added"] = protocol_from_xml_attrs({
+            e["added"] = version_from_xml_attrs({
                 **child.attrib,
                 **subchild.attrib
             })
@@ -83,7 +88,7 @@ def xml_to_fields(root: Element):
             data[name]["requiredFixml"] = child.get("notReqXML") == "0"
         except:
             pass
-        data[name]["added"] = protocol_from_xml_attrs(child.attrib)
+        data[name]["added"] = version_from_xml_attrs(child.attrib)
     return data
 
 
@@ -103,7 +108,7 @@ def xml_to_components(root: Element):
             data[name]["requiredFixml"] = item["@notReqXML"] == "0"
         except:
             pass
-        data[name]["added"] = protocol_from_xml_attrs(child.attrib)
+        data[name]["added"] = version_from_xml_attrs(child.attrib)
     return data
 
 
@@ -118,7 +123,7 @@ def xml_to_messages(root: Element):
         data[name]["section"] = child.get("section")
         data[name]["contents"] = xml_to_message_entities(child)
         data[name]["requiredFixml"] = child.get("notReqXML") == "0"
-        data[name]["added"] = protocol_from_xml_attrs(child.attrib)
+        data[name]["added"] = version_from_xml_attrs(child.attrib)
     return data
 
 

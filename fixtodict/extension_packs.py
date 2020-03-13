@@ -1,6 +1,7 @@
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from .repo_basic import xml_to_abbreviation, xml_to_category, xml_to_datatype, xml_to_field, xml_to_section
+
+from repo_basic import xml_to_abbreviation, xml_to_category, xml_to_datatype, xml_to_field, xml_to_section
 
 
 def apply_extension_pack(original, changes):
