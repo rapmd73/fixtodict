@@ -29,9 +29,15 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
     messages = xml_to_messages(xml_files["messages"])
     enums = xml_to_enums(xml_files["enums"])
     msg_contents = xml_to_msg_contents(xml_files["msg_contents"])
-    for (key, value) in fields.items():
+    # Embed stuff.
+    for value in fields.values():
         if "enum" in value:
             value["enum"] = enums[value["enum"]]
+    for value in messages.values():
+        value["breakdown"] = msg_contents[value["component"]]
+        del value["component"]
+    for (key, value) in components.items():
+        value["breakdown"] = msg_contents[key]
     return {
         "fixtodict": {
             "version": __version__,

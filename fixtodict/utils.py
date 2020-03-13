@@ -37,7 +37,7 @@ def target_filename(target_dir, v):
     return os.path.join(
         target_dir, "{}-{}-{}{}.json".format(
             v["fix"], v["major"], v["minor"],
-            "-sp" + v["sp"]))
+            "-sp" + v["sp"] if v["sp"] != "0" else ""))
 
 
 def iso8601_local():

@@ -44,7 +44,12 @@ def xml_get_component_type(root: Element):
 
 
 def xml_to_abbreviations(root: Element):
-    return [xml_to_abbreviation(c) for c in root]
+    if root is None:
+        return {}
+    data = {}
+    for child in root:
+        data.update(xml_to_abbreviation(child))
+    return data
 
 
 def xml_to_enums(root: Element):
@@ -60,6 +65,8 @@ def xml_to_enums(root: Element):
 
 
 def xml_to_categories(root: Element):
+    if root is None:
+        return None
     data = {}
     for child in root:
         data.update(xml_to_category(child))
@@ -67,10 +74,20 @@ def xml_to_categories(root: Element):
 
 
 def xml_to_msg_contents(root: Element):
-    return [xml_to_msg_content(c) for c in root]
+    data = {}
+    for child in root:
+        enum = xml_to_msg_content(child)
+        parent = enum["parent"]
+        if parent not in data:
+            data[parent] = []
+        del enum["parent"]
+        data[parent].append(enum)
+    return data
 
 
 def xml_to_sections(root: Element):
+    if root is None:
+        return None
     data = {}
     for child in root:
         data.update(xml_to_section(child))
@@ -147,6 +164,7 @@ def xml_to_message(root: Element):
     msg_id = root.find("MsgType").text
     data = {}
     data["name"] = root.find("Name").text
+    data["component"] = root.find("ComponentID").text
     data["category"] = root.find("CategoryID").text
     data["section"] = root.find("SectionID").text
     data["fixml"] = {}
