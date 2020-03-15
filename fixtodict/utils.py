@@ -25,7 +25,7 @@ def parse_protocol_version(val: str, ep=None):
 def version_from_xml_attrs(d: dict, prefix="added"):
     main = prefix
     ep = prefix + "EP"
-    if main in d and ep in d:
+    if main in d and ep in d and d[ep] != "-1":
         return parse_protocol_version(d[main], d[ep])
     elif main in d:
         return parse_protocol_version(d[main])

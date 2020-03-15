@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import click
+from checksumdir import dirhash
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 import test
@@ -10,6 +11,7 @@ import os
 
 from api import xml_files_to_fix_dict
 from docs import xml_to_docs, markdownify_docs, needs_docs, embed_docs_into_data
+from extension_packs import xml_to_extension_pack, apply_extension_pack
 from utils import target_filename
 from version import __version__
 
@@ -46,11 +48,18 @@ def read_xml_root(src, filename, opt=True):
     return None
 
 
+def read_xml_ep(path):
+    try:
+        return ElementTree.parse(path).getroot()
+    except:
+        err(path)
+
+
 @click.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
 @click.option(
-    "--ep",
+    "--ep", "ep_files",
     multiple=True,
     help="Include this Expansion Pack file (.xml) into the final Fix Dictionary.",
     type=click.Path(exists=True),
@@ -68,7 +77,7 @@ def read_xml_root(src, filename, opt=True):
     type=click.BOOL,
 )
 @click.version_option(__version__)
-def main(src, dst, ep, markdownify, minify):
+def main(src, dst, ep_files, markdownify, minify):
     """
     FIX Dictionary generator tool.
 
@@ -116,8 +125,16 @@ def main(src, dst, ep, markdownify, minify):
     json_indent = None if minify else 2
     xml_files = read_xml_files(src)
     result = xml_files_to_fix_dict(xml_files)
+    ep = []
+    for filename in ep_files:
+        root = read_xml_ep(filename)
+        ep.append(xml_to_extension_pack(root))
     if markdownify:
         result = markdownify_docs(result)
+    result["fixtodict"]["md5"] = dirhash(src, "md5")
+    # Apply EPs.
+    for x in ep:
+        result = apply_extension_pack(result, x)
     # Write output to file.
     filename = target_filename(dst, result["version"])
     with open(filename, "w") as f:

@@ -31,22 +31,44 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
     msg_contents = xml_to_msg_contents(xml_files["msg_contents"])
     # Embed stuff.
     for value in fields.values():
-        if "enum" in value:
+        if value["name"] == "RefMsgType":
+            print("-- Handling special case for `RefMsgType(372)`.")
+            del value["enum"]
+        elif value["enum"] is not None:
             value["enum"] = enums[value["enum"]]
+    for elements in msg_contents.values():
+        for elem in elements:
+            if elem["tag"] in fields:
+                elem["kind"] = "field"
+            else:
+                for c in components.values():
+                    if c["name"] == elem["tag"]:
+                        elem["kind"] = "component"
+                        break
+            if elem["kind"] is None:
+                print(elements)
+                print(elem)
+                print("NOOOONE")
+            assert(elem["kind"] is not None)
     for value in messages.values():
         value["breakdown"] = msg_contents[value["component"]]
         del value["component"]
     for (key, value) in components.items():
+        # Check this on online FIX Dictionary.
+        if key not in msg_contents:
+            msg_contents[key] = []
         value["breakdown"] = msg_contents[key]
     return {
         "fixtodict": {
             "version": __version__,
             "legal": LEGAL_INFO,
+            "md5": "",
             "command": " ".join(sys.argv),
             "generated": iso8601_local(),
-            "fixipe": fixipe_dictionary_link(version)
+            "fixipe": fixipe_dictionary_link(version),
         },
         "version": version,
+        "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
         "abbreviations": abbreviations,
         "datatypes": datatypes,
         "sections": sections,
@@ -54,5 +76,4 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
         "fields": fields,
         "components": components,
         "messages": messages,
-        "msg_contents": msg_contents,
     }
