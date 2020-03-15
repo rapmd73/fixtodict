@@ -3,22 +3,6 @@ from xml.etree.ElementTree import Element
 
 from utils import version_from_xml_attrs
 
-TYPOS = {
-    "messsage": "message",
-    "preceeding": "preceding",
-    "Execption": "Exception",
-    "ommitted": "omitted",
-    "insrument": "istrument",
-    "approriate": "appropriate",
-    "Undelying": "undelying",
-    "explaination": "explanation",
-    "specifed": "specified",
-    "mesage": "message",
-    "Comission": "Commission",
-    "positon": "position",
-    "Amout": "Amount",
-}
-
 # HELPERS
 # -------
 
@@ -27,11 +11,11 @@ def xml_get_history(root: Element, replaced=False):
     data = {}
     data["added"] = version_from_xml_attrs(root.attrib)
     data["updated"] = version_from_xml_attrs(root.attrib, prefix="updated")
-    data["deprecated"] = version_from_xml_attrs(
-        root.attrib, prefix="deprecated")
+    data["deprecated"] = version_from_xml_attrs(root.attrib,
+                                                prefix="deprecated")
     if replaced:
-        data["replaced"] = version_from_xml_attrs(
-            root.attrib, prefix="replaced")
+        data["replaced"] = version_from_xml_attrs(root.attrib,
+                                                  prefix="replaced")
         if root.get("ReplacedByField") is not None:
             data["replacement"] = root.get("ReplacedByField")
     if root.get("issue"):
@@ -39,7 +23,12 @@ def xml_get_history(root: Element, replaced=False):
     return data
 
 
-def xml_get_description(root: Element, body=False, usage=False, volume=False, elaboration=False, examples=False):
+def xml_get_description(root: Element,
+                        body=False,
+                        usage=False,
+                        volume=False,
+                        elaboration=False,
+                        examples=False):
     data = {}
     if body:
         data["body"] = root.findtext("Description")
@@ -56,6 +45,7 @@ def xml_get_description(root: Element, body=False, usage=False, volume=False, el
 
 def xml_get_component_type(root: Element):
     return str.lower(root.find("ComponentType").text)
+
 
 # MAIN XML EXPLORERS
 # ------------------
@@ -100,7 +90,10 @@ def xml_to_msg_contents(root: Element):
 
 
 def xml_to_sections(root: Element):
-    return xml_to_sorted_dict(root, xml_to_section)
+    if root is None:
+        root = []
+    data = [xml_to_section(c) for c in root]
+    return {k: v for (k, v) in data}
 
 
 def xml_to_components(root: Element):
@@ -108,7 +101,10 @@ def xml_to_components(root: Element):
 
 
 def xml_to_datatypes(root: Element):
-    return xml_to_sorted_dict(root, xml_to_datatype)
+    if root is None:
+        root = []
+    data = [xml_to_datatype(c) for c in root]
+    return {k: v for (k, v) in data}
 
 
 def xml_to_fields(root: Element):
@@ -144,26 +140,38 @@ def xml_to_category(root: Element):
 def xml_to_component(root: Element):
     kind = root.findtext("ComponentType")
     return (root.findtext("ComponentID") or root.get("ComponentID"), {
-        "name": root.findtext("Name"),
-        "nameAbbr": root.findtext("NameAbbr"),
-        "kind": kind.lower() if kind else None,
-        "category": root.findtext("CategoryID"),
-        "description": xml_get_description(root, body=True, elaboration=True),
-        "history": xml_get_history(root),
+        "name":
+        root.findtext("Name"),
+        "nameAbbr":
+        root.findtext("NameAbbr"),
+        "kind":
+        kind.lower() if kind else None,
+        "category":
+        root.findtext("CategoryID"),
+        "description":
+        xml_get_description(root, body=True, elaboration=True),
+        "history":
+        xml_get_history(root),
     })
 
 
 def xml_to_message(root: Element):
     return (root.find("MsgType").text, {
-        "name": root.find("Name").text,
-        "component": root.find("ComponentID").text,
-        "category": root.find("CategoryID").text,
-        "section": root.find("SectionID").text,
+        "name":
+        root.find("Name").text,
+        "component":
+        root.find("ComponentID").text,
+        "category":
+        root.find("CategoryID").text,
+        "section":
+        root.find("SectionID").text,
         "fixml": {
             "optional": bool(int(root.findtext("NotReqXML"))),
         },
-        "description": xml_get_description(root, body=True, elaboration=True),
-        "history": xml_get_history(root),
+        "description":
+        xml_get_description(root, body=True, elaboration=True),
+        "history":
+        xml_get_history(root),
     })
 
 
@@ -183,7 +191,7 @@ def xml_to_msg_content(root: Element):
 def xml_to_datatype(root: Element):
     return (root.find("Name").text, {
         "base": root.findtext("BaseType") or root.find("Name").text,
-        "description": xml_get_description(root),
+        "description": xml_get_description(root, examples=True, body=True),
         "history": xml_get_history(root),
     })
 
@@ -191,7 +199,6 @@ def xml_to_datatype(root: Element):
 def xml_to_section(root: Element):
     return (root.findtext("SectionID"), {
         "name": root.findtext("Name"),
-        "displayOrder": root.findtext("DisplayOrder"),
         "fixml": {
             "optional": bool(int(root.findtext("NotReqXML"))),
             "filename": root.findtext("FIXMLFileName"),
@@ -203,11 +210,16 @@ def xml_to_section(root: Element):
 
 def xml_to_field(root: Element):
     return (root.findtext("Tag"), {
-        "name": root.findtext("Name"),
-        "datatype": root.findtext("Type"),
-        "enum": root.findtext("EnumDatatype"),
-        "description": xml_get_description(root, body=True, elaboration=True),
-        "history": xml_get_history(root),
+        "name":
+        root.findtext("Name"),
+        "datatype":
+        root.findtext("Type"),
+        "enum":
+        root.findtext("EnumDatatype"),
+        "description":
+        xml_get_description(root, body=True, elaboration=True),
+        "history":
+        xml_get_history(root),
     })
 
 

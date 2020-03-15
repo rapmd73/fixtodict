@@ -35,10 +35,10 @@ setup(
     packages=["fixtodict"],
     python_requires='>=3.5',
     install_requires=['nltk', "click", "checksumdir==1.1.7",
-                      "dict-recursive-update==1.0.1"],
+                      "dict-recursive-update==1.0.1", "jsonpatch==1.25", "jsonschema==3.2.0"],
     entry_points="""
     [console_scripts]
-    fixtodict=fixtodict.cli:main
+    fixtodict=fixtodict.cli:gen
     """,
     test_suite='nose.collector',
     tests_require=['nose'],

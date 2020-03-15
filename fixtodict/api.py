@@ -4,11 +4,12 @@ from xml.etree.ElementTree import Element
 from typing import Optional, Dict
 import sys
 
-from basic_repository import (xml_to_abbreviations, xml_to_categories, xml_to_components, xml_to_msg_contents, xml_to_enums,
-                              xml_to_datatypes, xml_to_fields, xml_to_messages, xml_to_sections)
+from basic_repository import (xml_to_abbreviations, xml_to_categories,
+                              xml_to_components, xml_to_msg_contents,
+                              xml_to_enums, xml_to_datatypes, xml_to_fields,
+                              xml_to_messages, xml_to_sections)
 from utils import iso8601_local, target_filename, parse_protocol_version
 from version import __version__
-
 
 LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
 
@@ -19,7 +20,8 @@ def fixipe_dictionary_link(version):
 
 
 def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
-    version = parse_protocol_version(xml_files["fields"].get("version"))
+    # `xml_files["fields"]` is incorrect in FIX 4.3.
+    version = parse_protocol_version(xml_files["messages"].get("version"))
     abbreviations = xml_to_abbreviations(xml_files["abbreviations"])
     datatypes = xml_to_datatypes(xml_files["datatypes"])
     sections = xml_to_sections(xml_files["sections"])
@@ -38,18 +40,13 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
             value["enum"] = enums[value["enum"]]
     for elements in msg_contents.values():
         for elem in elements:
-            if elem["tag"] in fields:
-                elem["kind"] = "field"
-            else:
+            if elem["tag"] not in fields:
                 for c in components.values():
                     if c["name"] == elem["tag"]:
                         elem["kind"] = "component"
                         break
-            if elem["kind"] is None:
-                print(elements)
-                print(elem)
-                print("NOOOONE")
-            assert(elem["kind"] is not None)
+            else:
+                elem["kind"] = "field"
     for value in messages.values():
         value["breakdown"] = msg_contents[value["component"]]
         del value["component"]
@@ -59,6 +56,7 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
             msg_contents[key] = []
         value["breakdown"] = msg_contents[key]
     return {
+        "@context": "http://schema.org",
         "fixtodict": {
             "version": __version__,
             "legal": LEGAL_INFO,

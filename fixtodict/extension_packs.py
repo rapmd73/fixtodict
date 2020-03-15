@@ -1,8 +1,37 @@
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from dict_recursive_update import recursive_update
+import jsonpatch
 
 from basic_repository import *
+
+
+def extension_pack_to_json_patch(ep):
+    data = []
+    changes = ep["changes"]
+    for kind in ["abbreviations", "datatypes"]:
+        for (key, value) in changes["added"][kind].items():
+            data.append({
+                "op": "add",
+                "path": "/{}/{}".format(kind, key),
+                "value": value
+            })
+        for (key, value) in changes["updated"][kind].items():
+            for (child_key, child_value) in value.items():
+                data.append({
+                    "op": "replace",
+                    "path": "/{}/{}/{}".format(kind, key, child_key),
+                    "value": child_value
+                })
+        for (key, value) in changes["deprecated"]["abbreviations"].items():
+            pass
+            # original["abbreviations"] = recursive_update(original["abbreviations"],
+        for key in changes["removed"][kind].keys():
+            data.append({
+                "op": "remove",
+                "path": "/{}/{}".format(kind, key),
+            })
+    return jsonpatch.JsonPatch(data)
 
 
 def apply_extension_pack(original, ep):
@@ -10,11 +39,11 @@ def apply_extension_pack(original, ep):
     for (key, value) in changes["added"]["abbreviations"].items():
         original["abbreviations"][key] = value
     for (key, value) in changes["updated"]["abbreviations"].items():
-        original["abbreviations"] = recursive_update(
-            original["abbreviations"], {key: value})
+        original["abbreviations"] = recursive_update(original["abbreviations"],
+                                                     {key: value})
     for (key, value) in changes["deprecated"]["abbreviations"].items():
-        original["abbreviations"] = recursive_update(
-            original["abbreviations"], {key: value})
+        original["abbreviations"] = recursive_update(original["abbreviations"],
+                                                     {key: value})
     for abbr in changes["removed"]["abbreviations"]:
         del original["abbreviations"][abbr[0]]
     return original
@@ -37,7 +66,10 @@ def xml_to_extension_pack(root: Element):
     data["changes"]["deprecated"] = {}
     data["changes"]["removed"] = {}
     resource_kinds = [
-        ["abbreviations", "Abbreviations", "Abbreviation", xml_to_abbreviation],
+        [
+            "abbreviations", "Abbreviations", "Abbreviation",
+            xml_to_abbreviation
+        ],
         ["components", "Components", "Component", xml_to_component],  # FIXME
         ["datatypes", "Datatypes", "Datatype", xml_to_datatype],
         ["fields", "Fields", "Field", xml_to_field],

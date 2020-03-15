@@ -56,8 +56,8 @@ def xml_to_docs(root: Element):
 def markdownify_docs(docs):
     for (key, val) in docs.items():
         kind = key.split("_")[0]
-        docs[key] = "\n".join([beautify_docs(p, kind)
-                               for p in val["paragraphs"]])
+        docs[key] = "\n".join(
+            [beautify_docs(p, kind) for p in val["paragraphs"]])
     return docs
 
 
@@ -73,6 +73,24 @@ def embed_docs_into_data(data, docs):
     return data
 
 
-def needs_docs(fix_dict):
-    # TODO
-    return True
+def transform_descriptions(data, f):
+    if isinstance(data, dict):
+        for (key, val) in data.items():
+            if key == "description":
+                data[key] = f(val)
+            else:
+                data[key] = transform_descriptions(val, f)
+    elif isinstance(data, list):
+        data = [transform_descriptions(x, f) for x in data]
+    return data
+
+
+def fix_dict_replace_typos(data, typos):
+    def replace(description):
+        for kind in ["body", "usage", "volume", "elaboration"]:
+            if kind in description and description[kind] is not None:
+                for (old, new) in typos.items():
+                    description[kind] = description[kind].replace(old, new)
+        return description
+
+    return transform_descriptions(data, replace)
