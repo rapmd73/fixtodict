@@ -32,9 +32,9 @@ def xref(old, new):
             if key not in new[kind]:
                 log("REMOVED", key)
                 old[kind][key]["history"]["removed"] = new["version"]
-    with open(new_filename, "w") as f:
-        f.write(json.dumps(new, indent=json_indent))
-        print("-- Written to '{}'".format(new_filename))
     with open(old_filename, "w") as f:
-        f.write(json.dumps(old, indent=JSON_INDENT))
-        print("-- Written to '{}'".format(old_filename))
+        json.dump(old, f, indent=JSON_INDENT)
+    print("-- Written to '{}'".format(old_filename))
+    with open(new_filename, "w") as f:
+        json.dump(new, f, indent=JSON_INDENT)
+    print("-- Written to '{}'".format(new_filename))
