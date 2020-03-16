@@ -4,12 +4,12 @@ from xml.etree.ElementTree import Element
 from typing import Optional, Dict
 import sys
 
-from basic_repository import (xml_to_abbreviations, xml_to_categories,
-                              xml_to_components, xml_to_msg_contents,
-                              xml_to_enums, xml_to_datatypes, xml_to_fields,
-                              xml_to_messages, xml_to_sections)
-from utils import iso8601_local, target_filename, parse_protocol_version
-from version import __version__
+from .basic_repository import (xml_to_abbreviations, xml_to_categories,
+                               xml_to_components, xml_to_msg_contents,
+                               xml_to_enums, xml_to_datatypes, xml_to_fields,
+                               xml_to_messages, xml_to_sections)
+from .utils import iso8601_local, target_filename, parse_protocol_version
+from .version import __version__
 
 LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
 
@@ -56,7 +56,6 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
             msg_contents[key] = []
         value["breakdown"] = msg_contents[key]
     return {
-        "@context": "http://schema.org",
         "fixtodict": {
             "version": __version__,
             "legal": LEGAL_INFO,

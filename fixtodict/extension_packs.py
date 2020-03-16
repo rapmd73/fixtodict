@@ -3,7 +3,7 @@ from xml.etree.ElementTree import Element
 from dict_recursive_update import recursive_update
 import jsonpatch
 
-from basic_repository import *
+from .basic_repository import *
 
 
 def extension_pack_to_json_patch(ep):

@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 from io import open
 
@@ -32,13 +32,13 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     keywords='FIX protocol XML fintech finance trading',
-    packages=["fixtodict"],
+    packages=find_packages(),
     python_requires='>=3.5',
     install_requires=['nltk', "click", "checksumdir==1.1.7",
                       "dict-recursive-update==1.0.1", "jsonpatch==1.25", "jsonschema==3.2.0"],
     entry_points="""
     [console_scripts]
-    fixtodict=fixtodict.cli:gen
+    fixtodict=fixtodict.cli:cli
     """,
     test_suite='nose.collector',
     tests_require=['nose'],

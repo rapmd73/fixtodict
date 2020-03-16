@@ -1,2 +1,2 @@
-from version import __version__
-from cli import main
+from .version import __version__
+from .cli import cli

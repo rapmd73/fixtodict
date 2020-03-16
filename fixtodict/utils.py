@@ -1,6 +1,10 @@
 import os
 import datetime
+import json
+from xml.etree import ElementTree
 from typing import List
+
+JSON_INDENT = 2
 
 
 def parse_protocol_version(val: str, ep=None):
@@ -43,3 +47,37 @@ def target_filename(target_dir, v):
 def iso8601_local():
     # <https://stackoverflow.com/questions/19654578/python-utc-datetime-objects-iso-format-doesnt-include-z-zulu-or-zero-offset>
     return datetime.datetime.now().replace(microsecond=0).isoformat() + "Z"
+
+# ------
+# I/O
+# ------
+
+
+def err(path):
+    print("Error: Invalid XML file.")
+    exit(-1)
+
+
+def read_xml_root(src, filename, opt=True):
+    path = os.path.join(src, filename)
+    try:
+        return ElementTree.parse(path).getroot()
+    except:
+        if not opt:
+            err(path)
+    return None
+
+
+def read_xml_ep(path):
+    try:
+        return ElementTree.parse(path).getroot()
+    except:
+        err(path)
+
+
+def read_json(path):
+    try:
+        with open(path) as json_file:
+            return json.load(json_file)
+    except:
+        err(path)
