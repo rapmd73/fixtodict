@@ -2,6 +2,7 @@ import click
 import jsonpatch
 import test
 import json
+import yaml
 import os
 from checksumdir import dirhash
 from jsonschema import validate
@@ -64,7 +65,14 @@ def read_xml_files(src: str):
     help="Provide a JSON Patch file to apply to final data. Follows RFC 6902.",
     type=click.Path(exists=True),
 )
-def repo(src, dst, ep_files, markdownify, typo_files, patches):
+@click.option(
+    "--yaml",
+    "also_yaml",
+    multiple=True,
+    help="Also emit YAML besides JSON.",
+    type=click.BOOL,
+)
+def repo(src, dst, ep_files, markdownify, typo_files, patches, also_yaml):
     """
     Transform original FIX Repository data into JSON.
 
@@ -127,3 +135,12 @@ def repo(src, dst, ep_files, markdownify, typo_files, patches):
     with open(filename, "w") as f:
         f.write(json.dumps(data, indent=JSON_INDENT))
         print("-- Written to '{}'".format(filename))
+    if also_yaml:
+        # From <https://stackoverflow.com/questions/16782112/can-pyyaml-dump-dict-items-in-non-alphabetical-order>.
+        # I have NO idea what this does.
+        yaml.add_representer(
+            dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
+        filename = target_filename(dst, data["version"], ext="yaml")
+        with open(filename, "w") as f:
+            f.write(yaml.dump(data, allow_unicode=False, ))
+            print("-- Written to '{}'".format(filename))

@@ -37,11 +37,11 @@ def version_from_xml_attrs(d: dict, prefix="added"):
         return None
 
 
-def target_filename(target_dir, v):
+def target_filename(target_dir, v, ext="json"):
     return os.path.join(
         target_dir,
-        "{}-{}-{}{}.json".format(v["fix"], v["major"], v["minor"],
-                                 "-sp" + v["sp"] if v["sp"] != "0" else ""))
+        "{}-{}-{}{}.{}".format(v["fix"], v["major"], v["minor"],
+                               "-sp" + v["sp"] if v["sp"] != "0" else "", ext))
 
 
 def iso8601_local():
