@@ -43,6 +43,13 @@ You can now type `fixtodict --help` for thorough usage information. Here's an ex
     Written to 'empty/fixt-1-1.json'.
     Written to 'empty/fix-5-0-sp2.json'.
 
+## Codebase tour
+
+Main application code is inside `fixtodict/`. `empty/` was introduced as a handy, catch-all target directory for test runs.
+
+`resources/errata` contains random Fix Repository errata in JSON format. It is *not* complete. You should always prefer updating this repository rather than making manual fixes to output files.
+`tools/` contains web crawlers for [FixTrading.org](https://fixtrading.org). This allows for automatical download of EP definition files and other useful resources.
+
 ## License
 
 Copyright (c) 2020, Filippo Costa. This software is released under the terms of [Apache License 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
