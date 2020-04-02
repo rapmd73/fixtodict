@@ -33,8 +33,11 @@ setup(
     ],
     keywords='FIX protocol XML fintech finance trading',
     packages=find_packages(),
+    package_data={
+        "fixtodict": ["resources/**/*"]
+    },
     python_requires='>=3.5',
-    install_requires=['nltk', "click", "checksumdir==1.1.7",
+    install_requires=['nltk', "click", "checksumdir==1.1.7", "setuptools>=41",
                       "dict-recursive-update==1.0.1", "jsonpatch==1.25", "jsonschema==3.2.0"],
     entry_points="""
     [console_scripts]

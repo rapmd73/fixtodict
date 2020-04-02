@@ -6,6 +6,7 @@ import yaml
 import os
 from checksumdir import dirhash
 from jsonschema import validate
+import pkg_resources
 
 from . import cli
 from ..api import xml_files_to_fix_dict
@@ -115,8 +116,10 @@ def repo(src, dst, ep_files, markdownify, typo_files, patches, also_yaml):
     data = xml_files_to_fix_dict(xml_files)
     data["fixtodict"]["md5"] = dirhash(src, "md5")
     if markdownify:
-        data = markdownify_docs(data)
+        data = 1  # markdownify_docs(data)
     # Fix typos in original documentation.
+    typo_files.append(pkg_resources.resource_filename(
+        "fixtodict", "errata/typos.json"))
     for f in typo_files:
         data = fix_dict_replace_typos(data, read_json(f))
     validate(instance=data, schema=SCHEMA)

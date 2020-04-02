@@ -3,6 +3,7 @@ import datetime
 import json
 from xml.etree import ElementTree
 from typing import List
+import pkg_resources
 
 JSON_INDENT = 2
 
