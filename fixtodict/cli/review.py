@@ -8,7 +8,7 @@ from . import cli
 @click.argument("repo", nargs=1, type=click.Path(exists=True))
 def review(repo):
     """
-    Print out a short summary of a FIXtodict-produced JSON document.
+    Print a short summary of a FIXtodict-produced JSON document.
     """
     repo = read_json(repo)
     print("FIXtodict-flavoured FIX Repository data.")
