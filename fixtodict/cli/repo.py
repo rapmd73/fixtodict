@@ -9,6 +9,7 @@ from jsonschema import validate
 import pkg_resources
 
 from . import cli
+from .utils import opt_patch, opt_typos, opt_markdownify, opt_yaml, opt_ep
 from ..api import xml_files_to_fix_dict
 from ..extension_packs import xml_to_extension_pack, extension_pack_to_json_patch
 from ..description import fix_dict_replace_typos
@@ -37,42 +38,11 @@ def read_xml_files(src: str):
 @cli.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
-@click.option(
-    "--ep",
-    "ep_files",
-    multiple=True,
-    help="Include this Expansion Pack file (.xml) into the final Fix Dictionary.",
-    type=click.Path(exists=True),
-)
-@click.option(
-    "--markdownify",
-    "-m",
-    default=False,
-    help="Perform data enhancing on documentation strings. Off by default.",
-    type=click.BOOL,
-)
-@click.option(
-    "--typos",
-    "typo_files",
-    multiple=True,
-    help="Provide a JSON typos file.",
-    type=click.Path(exists=True),
-)
-@click.option(
-    "--patch",
-    "-p",
-    "patches",
-    multiple=True,
-    help="Provide a JSON Patch file to apply to final data. Follows RFC 6902.",
-    type=click.Path(exists=True),
-)
-@click.option(
-    "--yaml",
-    "also_yaml",
-    multiple=True,
-    help="Also emit YAML besides JSON.",
-    type=click.BOOL,
-)
+@opt_ep("ep_files")
+@opt_markdownify("markdownify")
+@opt_typos("typo_files")
+@opt_patch("patches")
+@opt_yaml("also_yaml")
 def repo(src, dst, ep_files, markdownify, typo_files, patches, also_yaml):
     """
     Transform original FIX Repository data into JSON.
