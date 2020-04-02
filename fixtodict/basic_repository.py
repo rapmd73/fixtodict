@@ -3,6 +3,10 @@ from xml.etree.ElementTree import Element
 
 from .utils import version_from_xml_attrs
 
+
+def filter_none(data):
+    return {k: v for k, v in data.items() if v is not None}
+
 # HELPERS
 # -------
 
@@ -20,7 +24,7 @@ def xml_get_history(root: Element, replaced=False):
             data["replacement"] = root.get("ReplacedByField")
     if root.get("issue"):
         data["issues"] = [root.get("issue")]
-    return data
+    return filter_none(data)
 
 
 def xml_get_description(root: Element,
@@ -40,7 +44,7 @@ def xml_get_description(root: Element,
         data["elaboration"] = root.findtext("Elaboration")
     if examples:
         data["examples"] = [c.text for c in root.findall("Example")]
-    return data
+    return filter_none(data)
 
 
 def xml_get_component_type(root: Element):

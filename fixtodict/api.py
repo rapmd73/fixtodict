@@ -14,11 +14,6 @@ from .version import __version__
 LEGAL_INFO = 'FIXtodict is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.'
 
 
-def fixipe_dictionary_link(version):
-    return "https://fixipe.com/#/explore/{fix}/{major}.{minor}/servicepack/{sp}".format(
-        **version)
-
-
 def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
     # `xml_files["fields"]` is incorrect in FIX 4.3.
     version = parse_protocol_version(xml_files["messages"].get("version"))
@@ -61,8 +56,7 @@ def xml_files_to_fix_dict(xml_files: Dict[str, Optional[Element]]):
             "legal": LEGAL_INFO,
             "md5": "",
             "command": " ".join(sys.argv),
-            "generated": iso8601_local(),
-            "fixipe": fixipe_dictionary_link(version),
+            "timestamp": iso8601_local(),
         },
         "version": version,
         "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",

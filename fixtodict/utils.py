@@ -3,28 +3,28 @@ import datetime
 import json
 from xml.etree import ElementTree
 from typing import List
-import pkg_resources
 
-JSON_INDENT = 2
+DEFAULT_INDENT = 2
 
 
 def parse_protocol_version(val: str, ep=None):
-    # Explicit servicepack tagging.
     if "_EP" in val:
         val, ep = tuple(val.split("_EP"))
     if "SP" in val:
-        val, servicepack = tuple(val.split("SP"))
+        val, sp = tuple(val.split("SP"))
     else:
-        servicepack = "0"
+        sp = "0"
     protocol, major, minor = tuple(val.split("."))
     protocol = protocol.lower()
-    return {
+    data = {
         "fix": protocol,
         "major": major,
         "minor": minor,
-        "sp": servicepack,
-        "ep": ep
+        "sp": sp,
     }
+    if ep:
+        data["ep"] = ep
+    return data
 
 
 def version_from_xml_attrs(d: dict, prefix="added"):
@@ -54,8 +54,8 @@ def iso8601_local():
 # ------
 
 
-def err(path):
-    print("Error: Invalid XML file.")
+def err(path, extension):
+    print("Error: Invalid {} file.".format(extension))
     exit(-1)
 
 
@@ -65,7 +65,7 @@ def read_xml_root(src, filename, opt=True):
         return ElementTree.parse(path).getroot()
     except:
         if not opt:
-            err(path)
+            err(path, "XML")
     return None
 
 
@@ -73,7 +73,7 @@ def read_xml_ep(path):
     try:
         return ElementTree.parse(path).getroot()
     except:
-        err(path)
+        err(path, "XML")
 
 
 def read_json(path):
@@ -81,4 +81,4 @@ def read_json(path):
         with open(path) as json_file:
             return json.load(json_file)
     except:
-        err(path)
+        err(path, "JSON")

@@ -38,8 +38,18 @@ def opt_markdownify(arg_name):
         "-m",
         arg_name,
         default=False,
+        is_flag=True,
         help="Perform data enhancing on documentation strings. Off by default.",
-        type=click.BOOL,
+    )(funct)
+
+
+def opt_improve_docs(arg_name):
+    return lambda funct: click.option(
+        "--improve-docs",
+        arg_name,
+        default=False,
+        is_flag=True,
+        help="Perform data enhancing on documentation strings. Off by default.",
     )(funct)
 
 
@@ -47,7 +57,7 @@ def opt_yaml(arg_name):
     return lambda funct: click.option(
         "--yaml",
         arg_name,
-        multiple=False,
-        help="Also emit YAML besides JSON.",
-        type=click.BOOL,
+        default=False,
+        is_flag=True,
+        help="Also emit YAML besides JSON. Off by default.",
     )(funct)

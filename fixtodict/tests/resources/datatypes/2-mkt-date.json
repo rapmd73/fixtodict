@@ -1,0 +1,9 @@
+[
+  "LocalMktDate",
+  {
+    "baseDatatype": "String",
+    "examples": ["BizDate=\"2003-09-10\""],
+    "description": "foobar",
+    "added": ["fix", "4", "2", "0"]
+  }
+]

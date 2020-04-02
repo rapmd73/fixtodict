@@ -16,7 +16,10 @@ def cli():
     choice of format; JSON Schema [1] and JSON Patch [2] are internally used
     respectively for validation and Extension Packs (EPs).
 
-    Type 'fixtodict <SUBCOMMAND> --help' for more information.
+    Type 'fixtodict <COMMAND> --help' for more information.
+
+    You can submit bugs by sending an email to
+    <filippocosta.italy+fixtodict@gmail.com>.
 
     \b
     Footnotes:

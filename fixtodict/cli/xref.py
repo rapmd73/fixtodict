@@ -4,7 +4,7 @@ import json
 import os
 
 from . import cli
-from ..utils import read_json, JSON_INDENT
+from ..utils import read_json, DEFAULT_INDENT
 
 
 @cli.command("xref")
@@ -33,8 +33,8 @@ def xref(old, new):
                 log("REMOVED", key)
                 old[kind][key]["history"]["removed"] = new["version"]
     with open(old_filename, "w") as f:
-        json.dump(old, f, indent=JSON_INDENT)
+        json.dump(old, f, indent=DEFAULT_INDENT)
     print("-- Written to '{}'".format(old_filename))
     with open(new_filename, "w") as f:
-        json.dump(new, f, indent=JSON_INDENT)
+        json.dump(new, f, indent=DEFAULT_INDENT)
     print("-- Written to '{}'".format(new_filename))

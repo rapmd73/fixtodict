@@ -6,16 +6,20 @@ import yaml
 import os
 from checksumdir import dirhash
 from jsonschema import validate
-import pkg_resources
 
 from . import cli
-from .utils import opt_patch, opt_typos, opt_markdownify, opt_yaml, opt_ep
+from .utils import opt_patch, opt_typos, opt_improve_docs, opt_yaml, opt_ep
 from ..api import xml_files_to_fix_dict
 from ..extension_packs import xml_to_extension_pack, extension_pack_to_json_patch
 from ..description import fix_dict_replace_typos
-from ..utils import target_filename, read_xml_root, read_json, read_xml_ep, JSON_INDENT
-from ..schema import SCHEMA
+from ..utils import target_filename, read_xml_root, read_json, read_xml_ep, DEFAULT_INDENT
+from ..resources import JSON_SCHEMA
 from ..version import __version__
+
+# From <https://stackoverflow.com/questions/16782112/can-pyyaml-dump-dict-items-in-non-alphabetical-order>.
+# I have no idea what this does.
+yaml.add_representer(
+    dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
 
 
 def read_xml_files(src: str):
@@ -38,12 +42,11 @@ def read_xml_files(src: str):
 @cli.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
-@opt_ep("ep_files")
-@opt_markdownify("markdownify")
+@opt_improve_docs("improve_docs")
 @opt_typos("typo_files")
 @opt_patch("patches")
-@opt_yaml("also_yaml")
-def repo(src, dst, ep_files, markdownify, typo_files, patches, also_yaml):
+@opt_yaml("emit_yaml")
+def repo(src, dst, improve_docs, typo_files, patches, emit_yaml):
     """
     Transform original FIX Repository data into JSON.
 
@@ -88,32 +91,20 @@ def repo(src, dst, ep_files, markdownify, typo_files, patches, also_yaml):
     if markdownify:
         data = 1  # markdownify_docs(data)
     # Fix typos in original documentation.
-    typo_files.append(pkg_resources.resource_filename(
-        "fixtodict", "errata/typos.json"))
     for f in typo_files:
         data = fix_dict_replace_typos(data, read_json(f))
-    validate(instance=data, schema=SCHEMA)
-    for ep_f in ep_files:
-        root = read_xml_ep(ep_f)
-        ep = xml_to_extension_pack(root)
-        patch = extension_pack_to_json_patch(ep)
-        data = patch.apply(data)
-    validate(instance=data, schema=SCHEMA)
+    validate(instance=data, schema=JSON_SCHEMA)
     for p in patches:
         patch = jsonpatch.JsonPatch(read_json(p))
         data = patch.apply(data)
-    validate(instance=data, schema=SCHEMA)
+    validate(instance=data, schema=JSON_SCHEMA)
     # Write output to file.
     filename = target_filename(dst, data["version"])
     with open(filename, "w") as f:
-        f.write(json.dumps(data, indent=JSON_INDENT))
+        f.write(json.dumps(data, indent=DEFAULT_INDENT))
         print("-- Written to '{}'".format(filename))
-    if also_yaml:
-        # From <https://stackoverflow.com/questions/16782112/can-pyyaml-dump-dict-items-in-non-alphabetical-order>.
-        # I have NO idea what this does.
-        yaml.add_representer(
-            dict, lambda self, data: yaml.representer.SafeRepresenter.represent_dict(self, data.items()))
+    if emit_yaml:
         filename = target_filename(dst, data["version"], ext="yaml")
         with open(filename, "w") as f:
-            f.write(yaml.dump(data, allow_unicode=False, ))
+            f.write(yaml.dump(data, allow_unicode=False, indent=DEFAULT_INDENT))
             print("-- Written to '{}'".format(filename))
