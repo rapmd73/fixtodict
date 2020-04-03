@@ -11,10 +11,6 @@ LEGAL_INFO = (
     "either express or implied."
 )
 
-JSON_SCHEMA_V1 = pkg_resources.resource_string(
-    PKG_NAME, "resources/schema/v1.json"
-).decode("ascii")
-
 
 def test_cases(tag):
     data = []

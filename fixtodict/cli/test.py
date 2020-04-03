@@ -1,5 +1,5 @@
 from . import cli
-from ..resources import JSON_SCHEMA_V1
+from ..schema import JSON_SCHEMA_V1
 
 
 @cli.command()

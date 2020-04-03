@@ -13,6 +13,7 @@ class FixVersion:
             "major": major,
             "minor": minor,
             "sp": sp,
+            "ep": [],
         }
         if ep:
             self.data["ep"] = ep

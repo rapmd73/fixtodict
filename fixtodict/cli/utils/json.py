@@ -11,7 +11,7 @@ def beautify_json(json_string: str):
 
 def read_json(path):
     try:
-        with open(path) as json_file:
-            return json.load(json_file)
+        with open(path) as f:
+            return json.load(f)
     except json.JSONDecodeError:
         err("JSON")

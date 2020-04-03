@@ -3,7 +3,6 @@ import jsonpatch
 import json
 import os
 from checksumdir import dirhash
-from jsonschema import validate
 
 from . import cli
 from .utils.options import opt_patch
@@ -11,27 +10,14 @@ from .utils.xml import read_xml_root
 from .utils.json import read_json, DEFAULT_INDENT
 from ..basic_repository_v1 import transform_basic_repository_v1
 from ..fix_version import FixVersion
-from ..resources import JSON_SCHEMA_V1
-
-
-def derive_target_filename(v: FixVersion, target_dir, ext="json"):
-    return os.path.join(
-        target_dir,
-        "{}-{}-{}{}.{}".format(
-            v["fix"],
-            v["major"],
-            v["minor"],
-            "-sp" + v["sp"] if v["sp"] != "0" else "",
-            ext,
-        ),
-    )
+from ..schema import validate_v1
+from ..patch import apply_patch
 
 
 @cli.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
-@click.argument("dst", nargs=1, type=click.Path(exists=True))
 @opt_patch("patches")
-def repo(src, dst, patches):
+def repo(src, patches):
     """
     Transform original FIX Repository data into JSON.
 
@@ -79,16 +65,11 @@ def repo(src, dst, patches):
         fields=read_xml_root(src, "Fields.xml", opt=False),
         messages=read_xml_root(src, "Messages.xml", opt=False),
         msg_contents=read_xml_root(src, "MsgContents.xml", opt=False),
-        sections=read_xml_root(src, "Sections.sml"),
+        sections=read_xml_root(src, "Sections.xml"),
     )
-    data["fixtodict"]["md5"] = dirhash(src, "md5")
-    validate(instance=data, schema=JSON_SCHEMA_V1)
+    data["meta"]["fixtodict"]["md5"] = dirhash(src, "md5")
+    validate_v1(data)
     for p in patches:
-        patch = jsonpatch.JsonPatch(read_json(p))
-        data = patch.apply(data)
-    validate(instance=data, schema=JSON_SCHEMA_V1)
-    # Write output to file.
-    filename = derive_target_filename(dst, data["version"])
-    with open(filename, "w") as f:
-        f.write(json.dumps(data, indent=DEFAULT_INDENT))
-        print("-- Written to '{}'".format(filename))
+        data = apply_patch(data, jsonpatch.JsonPatch(read_json(p)))
+    validate_v1(data)
+    print(json.dumps(data, indent=DEFAULT_INDENT))

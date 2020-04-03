@@ -17,6 +17,9 @@
     "meta": {
       "type": "object",
       "properties": {
+        "schema": {
+          "type": "string"
+        },
         "version": {
           "$ref": "#/definitions/version"
         },
@@ -119,7 +122,7 @@
           "type": "string"
         },
         "ep": {
-          "type": "string"
+          "type": ["string", "array"]
         }
       },
       "examples": [

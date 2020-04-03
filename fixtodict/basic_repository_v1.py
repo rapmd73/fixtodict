@@ -2,7 +2,7 @@ import sys
 from xml.etree.ElementTree import Element
 
 from .utils import (
-    iso8601_local,
+    iso8601_utc,
     filter_none,
 )
 from .fix_version import FixVersion
@@ -36,7 +36,7 @@ def transform_basic_repository_v1(
         # Handling special case for `RefMsgType(372)`.
         if value["name"] == "RefMsgType":
             del value["enum"]
-        elif value["enum"] is not None:
+        elif "enum" in value:
             value["enum"] = enums[value["enum"]]
     # Check the kind of content inside messages.
     for elements in msg_contents.values():
@@ -67,7 +67,7 @@ def transform_basic_repository_v1(
                 "legal": LEGAL_INFO,
                 "md5": "",
                 "command": " ".join(sys.argv),
-                "timestamp": iso8601_local(),
+                "timestamp": iso8601_utc(),
             },
         },
         "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
@@ -166,7 +166,9 @@ def xml_to_msg_contents(root: Element):
         if parent not in data:
             data[parent] = []
         data[parent].append(elem)
-    return {k: sorted(v, key=lambda x: x["i"]) for (k, v) in data.items()}
+    return {
+        k: sorted(v, key=lambda x: x["position"]) for (k, v) in data.items()
+    }
 
 
 def xml_to_sections(root: Element):

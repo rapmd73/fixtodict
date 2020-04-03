@@ -99,4 +99,5 @@ class ExtensionPack:
                 data += self.get_deprecation_as_jsonpatch(kind, key)
             for key in self.changes_removed[kind].keys():
                 data += self.get_removal_as_jsonpatch(kind, key)
+        data.append({"op": "add", "path": "/version/ep/-", "value": self.id})
         return jsonpatch.JsonPatch(data)

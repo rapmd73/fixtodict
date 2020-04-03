@@ -16,6 +16,6 @@ def read_xml_root(src, filename, opt=True):
 
 def read_xml_ep(path):
     try:
-        return ElementTree.parse(path).getroot()
+        return ElementTree.parse(path).getroot()[0]
     except ElementTree.ParseError:
         err("XML")
