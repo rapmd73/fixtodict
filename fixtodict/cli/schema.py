@@ -1,6 +1,3 @@
-import click
-import json
-
 from . import cli
 from ..resources import JSON_SCHEMA
 
@@ -10,4 +7,4 @@ def schema():
     """
     Print the JSON Schema used by FIXtodict.
     """
-    print(JSON_SCHEMA())
+    print(JSON_SCHEMA)

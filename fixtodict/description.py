@@ -2,13 +2,43 @@ import nltk
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 from xml.etree.ElementTree import Element
 
+from .utils import parse_protocol_version
+
+
+def link_to_fix_version(v: str):
+    v_parsed = parse_protocol_version(v)
+    return "[{}](#/fix-versions/{}/{}/{}/{})".format(
+        v,
+        v_parsed["fix"],
+        v_parsed["major"],
+        v_parsed["minor"],
+        v_parsed["sp"],
+    )
+
+
+def link_fix_versions(description: str):
+    description = description.replace("FIX 4.2", "")
+
+
+class Beautifier:
+    def __init__(
+        self, link_iso=False, link_datatype=False, fix_common_typos=False
+    ):
+        self.link_iso = link_iso
+        self.link_datatype = link_datatype
+        self.fix_common_typos = fix_common_typos
+
+    def beautify_description(self, description):
+        # TODO
+        return description
+
 
 def iso_link(iso: str):
-    return '[ISO {0}](https://en.wikipedia.org/wiki/ISO_{0})'.format(iso)
+    return "[ISO {0}](https://en.wikipedia.org/wiki/ISO_{0})".format(iso)
 
 
 def datatype_link(dt: str):
-    return '[`{0}`](#/datatypes/{0})'.format(dt)
+    return "[`{0}`](#/datatypes/{0})".format(dt)
 
 
 def beautify_docs(data, kind: str):
@@ -57,7 +87,8 @@ def markdownify_docs(docs):
     for (key, val) in docs.items():
         kind = key.split("_")[0]
         docs[key] = "\n".join(
-            [beautify_docs(p, kind) for p in val["paragraphs"]])
+            [beautify_docs(p, kind) for p in val["paragraphs"]]
+        )
     return docs
 
 

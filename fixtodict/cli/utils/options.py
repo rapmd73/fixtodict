@@ -6,7 +6,10 @@ def opt_ep(arg_name):
         "--ep",
         arg_name,
         multiple=True,
-        help="Include this Expansion Pack file (.xml) into the final Fix Dictionary.",
+        help=(
+            "Include this Expansion Pack file (.xml) "
+            "into the final Fix Dictionary."
+        ),
         type=click.Path(exists=True),
     )(funct)
 
@@ -17,7 +20,10 @@ def opt_patch(arg_name):
         "-p",
         arg_name,
         multiple=True,
-        help="Provide a JSON Patch file to apply to final data. Follows RFC 6902.",
+        help=(
+            "Provide a JSON Patch file to apply to final data. "
+            "Follows RFC 6902."
+        ),
         type=click.Path(exists=True),
     )(funct)
 
@@ -39,7 +45,10 @@ def opt_markdownify(arg_name):
         arg_name,
         default=False,
         is_flag=True,
-        help="Perform data enhancing on documentation strings. Off by default.",
+        help=(
+            "Perform data enhancing on documentation strings. "
+            "Off by default."
+        ),
     )(funct)
 
 
@@ -49,7 +58,10 @@ def opt_improve_docs(arg_name):
         arg_name,
         default=False,
         is_flag=True,
-        help="Perform data enhancing on documentation strings. Off by default.",
+        help=(
+            "Perform data enhancing on documentation strings."
+            "Off by default."
+        ),
     )(funct)
 
 

@@ -4,7 +4,7 @@ import json
 import os
 
 from . import cli
-from ..utils import read_json, DEFAULT_INDENT
+from .utils.json import read_json, DEFAULT_INDENT
 
 
 @cli.command("xref")
@@ -18,9 +18,19 @@ def xref(old, new):
     new_filename = new
     old = read_json(old)
     new = read_json(new)
-    for kind in ["abbreviations", "datatypes", "fields", "components", "messages"]:
-        def log(op, key): return print(
-            "-- New [{}] diff for kind {}: {}".format(op, kind, key))
+    for kind in [
+        "abbreviations",
+        "datatypes",
+        "fields",
+        "components",
+        "messages",
+    ]:
+
+        def log(op, key):
+            return print(
+                "-- New [{}] diff for kind {}: {}".format(op, kind, key)
+            )
+
         for (key, value) in new[kind].items():
             if key not in old[kind]:
                 log(" ADDED ", key)

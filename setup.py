@@ -2,19 +2,16 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
+from fixtodict import __version__ as version
+
 HERE = path.abspath(path.dirname(__file__))
 
 with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
-version = {}
-
-with open(path.join(HERE, 'fixtodict', "version.py"), encoding='utf-8') as f:
-    exec(f.read(), version)
-
 setup(
     name="fixtodict",
-    version=version["__version__"],
+    version=version,
     description='FIX Dictionary generator tool',
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',

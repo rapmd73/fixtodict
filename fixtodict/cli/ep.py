@@ -1,10 +1,9 @@
 import click
-import json
 
 from . import cli
-from .utils import opt_improve_docs
-from ..extension_packs import xml_to_extension_pack, extension_pack_to_json_patch
-from ..utils import read_xml_ep, DEFAULT_INDENT
+from .utils.xml import read_xml_ep
+from .utils.json import beautify_json
+from ..extension_pack import ExtensionPack
 
 
 @cli.command()
@@ -18,8 +17,7 @@ def ep(src, dst, improve_docs):
     Pack. <DST> is the final path of the result JSON Patch.
     """
     root = read_xml_ep(src)
-    ep = xml_to_extension_pack(root)
-    patch = extension_pack_to_json_patch(ep)
+    patch = ExtensionPack(root).to_jsonpatch().to_string()
     with open(dst, "w") as f:
-        f.write(json.dumps(json.loads(patch.to_string()), indent=DEFAULT_INDENT))
+        f.write(beautify_json(patch))
         print("-- Written to '{}'".format(dst))

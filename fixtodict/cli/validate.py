@@ -1,10 +1,10 @@
 import click
 import json
-
-from ..utils import read_json
-from ..resources import JSON_SCHEMA
-from . import cli
 from jsonschema import validate as validate_schema
+
+from . import cli
+from .utils.json import read_json
+from ..resources import JSON_SCHEMA
 
 
 @cli.command()
@@ -14,5 +14,5 @@ def validate(src):
     Check a JSON file for correctness.
     """
     data = read_json(src)
-    schema = json.loads(JSON_SCHEMA())
+    schema = json.loads(JSON_SCHEMA)
     validate_schema(instance=data, schema=schema)

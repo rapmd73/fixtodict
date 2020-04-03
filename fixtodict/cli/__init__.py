@@ -1,9 +1,9 @@
-from .main import cli
+from .main import cli  # NOQA
 
-from .schema import schema
-from .ep import ep
-from .patch import patch
-from .repo import repo
-from .review import review
-from .validate import validate
-from .xref import xref
+from .schema import schema  # NOQA
+from .ep import ep  # NOQA
+from .patch import patch  # NOQA
+from .repo import repo  # NOQA
+from .review import review  # NOQA
+from .validate import validate  # NOQA
+from .xref import xref  # NOQA
