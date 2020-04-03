@@ -4,7 +4,7 @@ from jsonschema import validate as validate_schema
 
 from . import cli
 from .utils.json import read_json
-from ..resources import JSON_SCHEMA
+from ..resources import JSON_SCHEMA_V1
 
 
 @cli.command()
@@ -14,5 +14,5 @@ def validate(src):
     Check a JSON file for correctness.
     """
     data = read_json(src)
-    schema = json.loads(JSON_SCHEMA)
+    schema = json.loads(JSON_SCHEMA_V1)
     validate_schema(instance=data, schema=schema)

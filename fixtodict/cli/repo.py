@@ -1,7 +1,6 @@
 import click
 import jsonpatch
 import json
-import yaml
 import os
 from checksumdir import dirhash
 from jsonschema import validate
@@ -10,49 +9,9 @@ from . import cli
 from .utils.options import opt_patch
 from .utils.xml import read_xml_root
 from .utils.json import read_json, DEFAULT_INDENT
-from ..basic_repository import (
-    xml_files_to_repository,
-    FILENAME_ABBREVIATIONS,
-    FILENAME_CATEGORIES,
-    FILENAME_COMPONENTS,
-    FILENAME_DATATYPES,
-    FILENAME_ENUMS,
-    FILENAME_FIELDS,
-    FILENAME_MESSAGES,
-    FILENAME_MSG_CONTENTS,
-    FILENAME_SECTIONS,
-)
+from ..basic_repository_v1 import transform_basic_repository_v1
 from ..fix_version import FixVersion
-from ..resources import JSON_SCHEMA
-
-# From <https://stackoverflow.com/questions/16782112>.
-# I have no idea what this does.
-yaml.add_representer(
-    dict,
-    lambda self, data: yaml.representer.SafeRepresenter.represent_dict(
-        self, data.items()
-    ),
-)
-
-
-def read_xml_files(src: str):
-    path = os.path.join(src, "Messages.xml")
-    if os.path.exists(path):
-        return {
-            r[0]: read_xml_root(src, r[0], opt=r[1])
-            for r in [
-                (FILENAME_ABBREVIATIONS, True),
-                (FILENAME_CATEGORIES, True),
-                (FILENAME_COMPONENTS, True),
-                (FILENAME_DATATYPES, True),
-                (FILENAME_ENUMS, False),
-                (FILENAME_FIELDS, False),
-                (FILENAME_MESSAGES, False),
-                (FILENAME_MSG_CONTENTS, False),
-                (FILENAME_SECTIONS, True),
-            ]
-        }
-    return None
+from ..resources import JSON_SCHEMA_V1
 
 
 def derive_target_filename(v: FixVersion, target_dir, ext="json"):
@@ -111,14 +70,23 @@ def repo(src, dst, patches):
     Filenames are properly generated according to FIX protocol version. Old
     files in <DST> might get overwritten WITHOUT BACKUP!
     """
-    xml_files = read_xml_files(src)
-    data = xml_files_to_repository(xml_files)
+    data = transform_basic_repository_v1(
+        abbreviations=read_xml_root(src, "Abbreviations.xml"),
+        categories=read_xml_root(src, "Categories.xml"),
+        components=read_xml_root(src, "Components.xml"),
+        datatypes=read_xml_root(src, "Datatypes.xml"),
+        enums=read_xml_root(src, "Enums.xml", opt=False),
+        fields=read_xml_root(src, "Fields.xml", opt=False),
+        messages=read_xml_root(src, "Messages.xml", opt=False),
+        msg_contents=read_xml_root(src, "MsgContents.xml", opt=False),
+        sections=read_xml_root(src, "Sections.sml"),
+    )
     data["fixtodict"]["md5"] = dirhash(src, "md5")
-    validate(instance=data, schema=JSON_SCHEMA)
+    validate(instance=data, schema=JSON_SCHEMA_V1)
     for p in patches:
         patch = jsonpatch.JsonPatch(read_json(p))
         data = patch.apply(data)
-    validate(instance=data, schema=JSON_SCHEMA)
+    validate(instance=data, schema=JSON_SCHEMA_V1)
     # Write output to file.
     filename = derive_target_filename(dst, data["version"])
     with open(filename, "w") as f:

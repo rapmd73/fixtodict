@@ -2,7 +2,10 @@
   "2841",
   {
     "name": "UnderlyingRefID",
-    "type": "String",
-    "description": "Identifies ..."
+    "datatype": "String",
+    "docs": {
+      "description": "Identifies ..."
+    },
+    "history": {}
   }
 ]

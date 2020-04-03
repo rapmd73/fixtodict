@@ -1,9 +1,14 @@
-from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from dict_recursive_update import recursive_update
 import jsonpatch
 
-from .basic_repository import *
+from .basic_repository_v1 import (
+    xml_to_abbreviation,
+    xml_to_component,
+    xml_to_datatype,
+    xml_to_field,
+    xml_to_category,
+    xml_to_section,
+)
 
 
 class ExtensionPack:
@@ -79,7 +84,7 @@ class ExtensionPack:
         return []
 
     def get_removal_as_jsonpatch(self, resource_kind, key):
-        return [{"op": "remove", "path": "/{}/{}".format(resource_kind, key),}]
+        return [{"op": "remove", "path": "/{}/{}".format(resource_kind, key)}]
 
     def to_jsonpatch(self):
         data = []

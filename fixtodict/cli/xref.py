@@ -1,7 +1,5 @@
 import click
-import sys
 import json
-import os
 
 from . import cli
 from .utils.json import read_json, DEFAULT_INDENT

@@ -2,7 +2,7 @@
   "EFP",
   {
     "term": "ExchangeForPhysical",
-    "description": {},
+    "docs": {},
     "history": {
       "added": {
         "fix": "fix",

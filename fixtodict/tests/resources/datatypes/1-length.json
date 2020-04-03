@@ -1,8 +1,18 @@
 [
   "Length",
   {
-    "baseDatatype": "int",
-    "description": "lulz",
-    "added": ["fix", "4", "3", "0"]
+    "base": "int",
+    "docs": {
+      "description": "foobar",
+      "examples": []
+    },
+    "history": {
+      "added": {
+        "fix": "fix",
+        "major": "4",
+        "minor": "3",
+        "sp": "0"
+      }
+    }
   }
 ]

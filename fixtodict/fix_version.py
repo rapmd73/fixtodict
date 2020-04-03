@@ -1,6 +1,3 @@
-import os
-
-
 class FixVersion:
     def __init__(self, val: str, ep=None):
         if "_EP" in val:
@@ -21,12 +18,11 @@ class FixVersion:
             self.data["ep"] = ep
 
     @classmethod
-    def create_from_xml_attrs(d, prefix="added"):
-        main = prefix
-        ep = prefix + "EP"
-        if main in d and ep in d and d[ep] != "-1":
-            return Version(d[main], d[ep])
-        elif main in d:
-            return Version(d[main])
+    def create_from_xml_attrs(cls, attrs, keyword):
+        ep = keyword + "EP"
+        if keyword in attrs and ep in attrs and attrs[ep] != "-1":
+            return cls(attrs[keyword], attrs[ep])
+        elif keyword in attrs:
+            return cls(attrs[keyword])
         else:
             return None

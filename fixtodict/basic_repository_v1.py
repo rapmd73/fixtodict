@@ -1,25 +1,85 @@
 import sys
 from xml.etree.ElementTree import Element
-from typing import Optional, Dict
 
 from .utils import (
     iso8601_local,
-    parse_protocol_version,
     filter_none,
-    version_from_xml_attrs,
 )
+from .fix_version import FixVersion
 from .resources import LEGAL_INFO
 from .__version__ import __version__
 
-FILENAME_ABBREVIATIONS = "Abbreviations.xml"
-FILENAME_CATEGORIES = "Categories.xml"
-FILENAME_COMPONENTS = "Components.xml"
-FILENAME_DATATYPES = "Datatypes.xml"
-FILENAME_ENUMS = "Enums.xml"
-FILENAME_FIELDS = "Fields.xml"
-FILENAME_MESSAGES = "Messages.xml"
-FILENAME_MSG_CONTENTS = "MsgContents.xml"
-FILENAME_SECTIONS = "Sections.xml"
+
+def transform_basic_repository_v1(
+    abbreviations: Element,
+    categories: Element,
+    components: Element,
+    datatypes: Element,
+    enums: Element,
+    fields: Element,
+    messages: Element,
+    msg_contents: Element,
+    sections: Element,
+):
+    fix_version = FixVersion(messages.get("version")).data
+    abbreviations = xml_to_abbreviations(abbreviations)
+    categories = xml_to_categories(categories)
+    components = xml_to_components(components)
+    datatypes = xml_to_datatypes(datatypes)
+    enums = xml_to_enums(enums)
+    fields = xml_to_fields(fields)
+    messages = xml_to_messages(messages)
+    msg_contents = xml_to_msg_contents(msg_contents)
+    sections = xml_to_sections(sections)
+    # Embed enums into fields.
+    for value in fields.values():
+        # Handling special case for `RefMsgType(372)`.
+        if value["name"] == "RefMsgType":
+            del value["enum"]
+        elif value["enum"] is not None:
+            value["enum"] = enums[value["enum"]]
+    # Check the kind of content inside messages.
+    for elements in msg_contents.values():
+        for elem in elements:
+            if elem["tag"] not in fields:
+                for c in components.values():
+                    if c["name"] == elem["tag"]:
+                        elem["kind"] = "component"
+                        break
+            else:
+                elem["kind"] = "field"
+    # Embed contents into messages.
+    for value in messages.values():
+        value["breakdown"] = msg_contents[value["component"]]
+        del value["component"]
+    # Embed contents into components.
+    for (key, value) in components.items():
+        # TODO: check affected components on FIX Dictionary.
+        if key not in msg_contents:
+            msg_contents[key] = []
+        value["breakdown"] = msg_contents[key]
+    return {
+        "meta": {
+            "schema": "1",
+            "version": fix_version,
+            "fixtodict": {
+                "version": __version__,
+                "legal": LEGAL_INFO,
+                "md5": "",
+                "command": " ".join(sys.argv),
+                "timestamp": iso8601_local(),
+            },
+        },
+        "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
+        "abbreviations": abbreviations,
+        "datatypes": datatypes,
+        "sections": sections,
+        "categories": categories,
+        "fields": fields,
+        "components": components,
+        "messages": messages,
+    }
+
 
 # HELPERS
 # -------
@@ -27,23 +87,21 @@ FILENAME_SECTIONS = "Sections.xml"
 
 def xml_get_history(root: Element, replaced=False):
     data = {}
-    data["added"] = version_from_xml_attrs(root.attrib)
-    data["updated"] = version_from_xml_attrs(root.attrib, prefix="updated")
-    data["deprecated"] = version_from_xml_attrs(
-        root.attrib, prefix="deprecated"
-    )
+    keywords = ["added", "updated", "deprecated"]
     if replaced:
-        data["replaced"] = version_from_xml_attrs(
-            root.attrib, prefix="replaced"
-        )
+        keywords.append("replaced")
         if root.get("ReplacedByField") is not None:
             data["replacement"] = root.get("ReplacedByField")
+    for keyword in keywords:
+        version = FixVersion.create_from_xml_attrs(root.attrib, keyword)
+        if version is not None:
+            data[keyword] = version.data
     if root.get("issue"):
         data["issues"] = [root.get("issue")]
     return filter_none(data)
 
 
-def xml_get_description(
+def xml_get_docs(
     root: Element,
     body=False,
     usage=False,
@@ -53,7 +111,7 @@ def xml_get_description(
 ):
     data = {}
     if body:
-        data["body"] = root.findtext("Description")
+        data["description"] = root.findtext("Description")
     if usage:
         data["usage"] = root.findtext("Usage")
     if volume:
@@ -142,7 +200,7 @@ def xml_to_abbreviation(root: Element):
         root.find("AbbrTerm").text,
         {
             "term": root.findtext("Term") or root.get("Term"),
-            "description": xml_get_description(root, usage=True),
+            "docs": xml_get_docs(root, usage=True),
             "history": xml_get_history(root),
         },
     )
@@ -159,7 +217,7 @@ def xml_to_category(root: Element):
                 "generateImpl": root.find("GenerateImplFile").text,
                 "optional": bool(int(root.find("NotReqXML").text)),
             },
-            "description": xml_get_description(root, body=True, volume=True),
+            "docs": xml_get_docs(root, body=True, volume=True),
             "history": xml_get_history(root),
         },
     )
@@ -174,9 +232,7 @@ def xml_to_component(root: Element):
             "nameAbbr": root.findtext("NameAbbr"),
             "kind": kind.lower() if kind else None,
             "category": root.findtext("CategoryID"),
-            "description": xml_get_description(
-                root, body=True, elaboration=True
-            ),
+            "docs": xml_get_docs(root, body=True, elaboration=True),
             "history": xml_get_history(root),
         },
     )
@@ -190,10 +246,8 @@ def xml_to_message(root: Element):
             "component": root.find("ComponentID").text,
             "category": root.find("CategoryID").text,
             "section": root.find("SectionID").text,
-            "fixml": {"optional": bool(int(root.findtext("NotReqXML"))),},
-            "description": xml_get_description(
-                root, body=True, elaboration=True
-            ),
+            "fixml": {"optional": bool(int(root.findtext("NotReqXML")))},
+            "docs": xml_get_docs(root, body=True, elaboration=True),
             "history": xml_get_history(root),
         },
     )
@@ -204,10 +258,10 @@ def xml_to_msg_content(root: Element):
         "parent": root.find("ComponentID").text,
         "tag": root.find("TagText").text,
         "kind": None,
-        "i": float(root.find("Position").text),
+        "position": float(root.find("Position").text),
         "optional": not bool(int(root.find("Reqd").text)),
         "inlined": bool(int(root.findtext("Inlined", default="1"))),
-        "description": xml_get_description(root, body=True),
+        "docs": xml_get_docs(root, body=True),
         "history": xml_get_history(root),
     }
 
@@ -217,7 +271,7 @@ def xml_to_datatype(root: Element):
         root.find("Name").text,
         {
             "base": root.findtext("BaseType") or root.find("Name").text,
-            "description": xml_get_description(root, examples=True, body=True),
+            "docs": xml_get_docs(root, examples=True, body=True),
             "history": xml_get_history(root),
         },
     )
@@ -232,7 +286,7 @@ def xml_to_section(root: Element):
                 "optional": bool(int(root.findtext("NotReqXML"))),
                 "filename": root.findtext("FIXMLFileName"),
             },
-            "description": xml_get_description(root, volume=True, body=True),
+            "docs": xml_get_docs(root, volume=True, body=True),
             "history": xml_get_history(root),
         },
     )
@@ -240,16 +294,16 @@ def xml_to_section(root: Element):
 
 def xml_to_field(root: Element):
     return (
-        root.findtext("Tag"),
-        {
-            "name": root.findtext("Name"),
-            "datatype": root.findtext("Type"),
-            "enum": root.findtext("EnumDatatype"),
-            "description": xml_get_description(
-                root, body=True, elaboration=True
-            ),
-            "history": xml_get_history(root),
-        },
+        root.findtext("Tag") or root.get("Tag"),
+        filter_none(
+            {
+                "name": root.findtext("Name"),
+                "datatype": root.findtext("Type"),
+                "enum": root.findtext("EnumDatatype"),
+                "docs": xml_get_docs(root, body=True, elaboration=True),
+                "history": xml_get_history(root),
+            }
+        ),
     )
 
 
@@ -259,63 +313,5 @@ def xml_to_enum(root: Element):
         "name": root.find("SymbolicName").text,
         "value": root.find("Value").text,
         "history": xml_get_history(root),
-        "description": xml_get_description(root),
-    }
-
-
-def xml_files_to_repository(xml_files: Dict[str, Optional[Element]]):
-    # `xml_files["fields"]` is incorrect in FIX 4.3.
-    version = parse_protocol_version(xml_files["Messages.xml"].get("version"))
-    abbreviations = xml_to_abbreviations(xml_files["abbreviations"])
-    datatypes = xml_to_datatypes(xml_files["datatypes"])
-    sections = xml_to_sections(xml_files["sections"])
-    categories = xml_to_categories(xml_files["categories"])
-    fields = xml_to_fields(xml_files["fields"])
-    components = xml_to_components(xml_files["components"])
-    messages = xml_to_messages(xml_files["messages"])
-    enums = xml_to_enums(xml_files["enums"])
-    msg_contents = xml_to_msg_contents(xml_files["msg_contents"])
-    # Embed stuff.
-    for value in fields.values():
-        if value["name"] == "RefMsgType":
-            print("-- Handling special case for `RefMsgType(372)`.")
-            del value["enum"]
-        elif value["enum"] is not None:
-            value["enum"] = enums[value["enum"]]
-    for elements in msg_contents.values():
-        for elem in elements:
-            if elem["tag"] not in fields:
-                for c in components.values():
-                    if c["name"] == elem["tag"]:
-                        elem["kind"] = "component"
-                        break
-            else:
-                elem["kind"] = "field"
-    for value in messages.values():
-        value["breakdown"] = msg_contents[value["component"]]
-        del value["component"]
-    for (key, value) in components.items():
-        # Check this on online FIX Dictionary.
-        if key not in msg_contents:
-            msg_contents[key] = []
-        value["breakdown"] = msg_contents[key]
-    return {
-        "meta": {
-            "version": version,
-            "fixtodict": {
-                "version": __version__,
-                "legal": LEGAL_INFO,
-                "md5": "",
-                "command": " ".join(sys.argv),
-                "timestamp": iso8601_local(),
-            },
-        },
-        "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
-        "abbreviations": abbreviations,
-        "datatypes": datatypes,
-        "sections": sections,
-        "categories": categories,
-        "fields": fields,
-        "components": components,
-        "messages": messages,
+        "docs": xml_get_docs(root),
     }

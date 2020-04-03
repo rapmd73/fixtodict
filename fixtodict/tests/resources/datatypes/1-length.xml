@@ -1,7 +1,7 @@
 <Datatype added="FIX.4.3">
     <Name>Length</Name>
     <BaseType>int</BaseType>
-    <Description>lulz</Description>
+    <Description>foobar</Description>
     <XML>
         <BuiltIn>0</BuiltIn>
         <Base>xs:nonNegativeInteger</Base>
