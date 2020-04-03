@@ -1,10 +1,10 @@
 import unittest
-from ..basic_repository_v1 import (
+from fixtodict.basic_repository_v1 import (
     xml_to_abbreviation,
     xml_to_datatype,
     xml_to_field,
 )
-from ..resources import test_cases
+from fixtodict.resources import test_cases
 
 
 class TestBasicRepository(unittest.TestCase):

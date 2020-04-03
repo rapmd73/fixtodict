@@ -19,16 +19,16 @@ JSON_SCHEMA_V1 = pkg_resources.resource_string(
 def test_cases(tag):
     data = []
     t_cases = pkg_resources.resource_listdir(
-        PKG_NAME, "tests/resources/{}/".format(tag)
+        PKG_NAME, "resources/tests/{}/".format(tag)
     )
     for t_case in t_cases:
         base, extension = os.path.splitext(t_case)
         if extension == ".xml":
             xml_string = pkg_resources.resource_string(
-                PKG_NAME, "tests/resources/{}/{}.xml".format(tag, base)
+                PKG_NAME, "resources/tests/{}/{}.xml".format(tag, base)
             )
             json_string = pkg_resources.resource_string(
-                PKG_NAME, "tests/resources/{}/{}.json".format(tag, base)
+                PKG_NAME, "resources/tests/{}/{}.json".format(tag, base)
             )
             data.append(
                 (ElementTree.fromstring(xml_string), json.loads(json_string))

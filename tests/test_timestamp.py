@@ -1,6 +1,6 @@
 import unittest
 import datetime
-from ..utils import iso8601_local
+from fixtodict.utils import iso8601_local
 
 
 class TestTimestamp(unittest.TestCase):
