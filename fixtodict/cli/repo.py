@@ -1,6 +1,5 @@
 import click
 import jsonpatch
-import test
 import json
 import yaml
 import os
@@ -8,13 +7,7 @@ from checksumdir import dirhash
 from jsonschema import validate
 
 from . import cli
-from .utils.options import (
-    opt_patch,
-    opt_typos,
-    opt_improve_docs,
-    opt_yaml,
-    opt_ep,
-)
+from .utils.options import opt_patch
 from .utils.xml import read_xml_root
 from .utils.json import read_json, DEFAULT_INDENT
 from ..basic_repository import (
@@ -29,10 +22,10 @@ from ..basic_repository import (
     FILENAME_MSG_CONTENTS,
     FILENAME_SECTIONS,
 )
-from ..utils import target_filename
+from ..fix_version import FixVersion
 from ..resources import JSON_SCHEMA
 
-# From <https://stackoverflow.com/questions/16782112/can-pyyaml-dump-dict-items-in-non-alphabetical-order>.
+# From <https://stackoverflow.com/questions/16782112>.
 # I have no idea what this does.
 yaml.add_representer(
     dict,
@@ -62,13 +55,24 @@ def read_xml_files(src: str):
     return None
 
 
+def derive_target_filename(v: FixVersion, target_dir, ext="json"):
+    return os.path.join(
+        target_dir,
+        "{}-{}-{}{}.{}".format(
+            v["fix"],
+            v["major"],
+            v["minor"],
+            "-sp" + v["sp"] if v["sp"] != "0" else "",
+            ext,
+        ),
+    )
+
+
 @cli.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
-@opt_typos("typo_files")
 @opt_patch("patches")
-@opt_yaml("emit_yaml")
-def repo(src, dst, typo_files, patches, emit_yaml):
+def repo(src, dst, patches):
     """
     Transform original FIX Repository data into JSON.
 
@@ -108,7 +112,7 @@ def repo(src, dst, typo_files, patches, emit_yaml):
     files in <DST> might get overwritten WITHOUT BACKUP!
     """
     xml_files = read_xml_files(src)
-    data = xml_files_to_fix_dict(xml_files)
+    data = xml_files_to_repository(xml_files)
     data["fixtodict"]["md5"] = dirhash(src, "md5")
     validate(instance=data, schema=JSON_SCHEMA)
     for p in patches:
@@ -116,14 +120,7 @@ def repo(src, dst, typo_files, patches, emit_yaml):
         data = patch.apply(data)
     validate(instance=data, schema=JSON_SCHEMA)
     # Write output to file.
-    filename = target_filename(dst, data["version"])
+    filename = derive_target_filename(dst, data["version"])
     with open(filename, "w") as f:
         f.write(json.dumps(data, indent=DEFAULT_INDENT))
         print("-- Written to '{}'".format(filename))
-    if emit_yaml:
-        filename = target_filename(dst, data["version"], ext="yaml")
-        with open(filename, "w") as f:
-            f.write(
-                yaml.dump(data, allow_unicode=False, indent=DEFAULT_INDENT)
-            )
-            print("-- Written to '{}'".format(filename))
