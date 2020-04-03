@@ -1,7 +1,7 @@
 import click
 
 from . import cli
-from .utils.xml import read_xml_ep
+from .utils.xml import read_xml_root
 from .utils.json import beautify_json
 from ..extension_pack import ExtensionPack
 
@@ -15,6 +15,6 @@ def ep(src):
     <SRC> must be a valid XML file containing the definition of an Extension
     Pack. The resulting JSON Patch will be printed.
     """
-    root = read_xml_ep(src)
+    root = read_xml_root("", src, opt=False)[0]
     patch = ExtensionPack(root).to_jsonpatch().to_string()
     print(beautify_json(patch))

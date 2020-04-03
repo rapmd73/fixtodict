@@ -69,7 +69,7 @@ class ExtensionPack:
 
     def get_update_as_jsonpatch(self, resource_kind, key):
         data = []
-        for (c_key, c_value) in self.changes_updated[resource_kind][key]:
+        for (c_key, c_value) in self.changes_updated[resource_kind][key].items():
             data.append(
                 {
                     "op": "replace",

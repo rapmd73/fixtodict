@@ -62,6 +62,7 @@ def transform_basic_repository_v1(
         "meta": {
             "schema": "1",
             "version": fix_version,
+            "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
             "fixtodict": {
                 "version": __version__,
                 "legal": LEGAL_INFO,
@@ -70,7 +71,6 @@ def transform_basic_repository_v1(
                 "timestamp": iso8601_utc(),
             },
         },
-        "copyright": "Copyright (c) FIX Protocol Limited, all rights reserved",
         "abbreviations": abbreviations,
         "datatypes": datatypes,
         "sections": sections,
@@ -270,12 +270,12 @@ def xml_to_msg_content(root: Element):
 
 def xml_to_datatype(root: Element):
     return (
-        root.find("Name").text,
-        {
-            "base": root.findtext("BaseType") or root.find("Name").text,
+        root.get("Name") or root.find("Name").text,
+        filter_none({
+            "base": root.findtext("Base"),
             "docs": xml_get_docs(root, examples=True, body=True),
             "history": xml_get_history(root),
-        },
+        }),
     )
 
 

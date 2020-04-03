@@ -8,4 +8,7 @@ JSON_SCHEMA_V1 = pkg_resources.resource_string(
 
 
 def validate_v1(data):
-    jsonschema.validate(data, json.loads(JSON_SCHEMA_V1))
+    try:
+        jsonschema.validate(data, json.loads(JSON_SCHEMA_V1))
+    except jsonschema.ValidationError as e:
+        print(e.message)
