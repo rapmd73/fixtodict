@@ -43,6 +43,11 @@ You can now type `fixtodict --help` for thorough usage information. Here's an ex
     Written to 'empty/fixt-1-1.json'.
     Written to 'empty/fix-5-0-sp2.json'.
 
+You can also install from source:
+
+    $ git clone git@github.com:fixipe/fixtodict.git
+    $ pip3 install -e fixtodict
+
 ## Codebase tour
 
 Main application code is inside `fixtodict/`. `empty/` was introduced as a handy, catch-all target directory for test runs.
