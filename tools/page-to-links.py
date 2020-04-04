@@ -22,6 +22,8 @@ def main(src, dst):
         container = tag.parent.parent
         title = container.find("div", {"class": "media-body"}).find("h3")
         ep = title.find("a").getText().split(" ")[0][2:]
+        if not ep:
+            ep = title.find("a").getText().split(" ")[1]
         links[ep] = tag["onclick"].split("'")[1]
     with open(dst, "w") as f:
         json.dump(links, f, indent=2)

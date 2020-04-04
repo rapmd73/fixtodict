@@ -13,7 +13,8 @@ import os
 @click.argument("links", nargs=1, type=click.Path(exists=True))
 @click.argument("dst", nargs=1, type=click.Path(exists=True))
 @click.argument("headers", nargs=1, type=click.Path(exists=True))
-def main(links, dst, headers):
+@click.option("--download-again", default=False, type=click.BOOL)
+def main(links, dst, headers, download_again):
     """
     Download Expansion Pack data from a set of links <LINKS>.
     """
@@ -25,7 +26,11 @@ def main(links, dst, headers):
     for (ep, url) in links.items():
         dir = os.path.join(dst, "EP" + str(ep))
         if os.path.exists(dir):
-            shutil.rmtree(dir)
+            if download_again:
+                shutil.rmtree(dir)
+            else:
+                print("-- EP{}.xml found, not downloading again".format(ep))
+                continue
         os.makedirs(dir)
         path = os.path.join(dir, "raw.zip")
         with requests.get(url, stream=True, headers=headers) as r:
@@ -38,13 +43,6 @@ def main(links, dst, headers):
                 filename = os.path.join(dir, filename)
                 with zipfile.ZipFile(filename) as f:
                     f.extractall(dir)
-        for filename in os.listdir(dir):
-            if filename != "EP{}.xml".format(ep):
-                path = os.path.join(dir, filename)
-                if os.path.isfile(path):
-                    os.remove(path)
-                else:
-                    shutil.rmtree(path)
         print("-- Successfully downloaded EP{}.xml".format(ep))
         # We wouldn't want to DDOS https://fixtrading.org :)
         time.sleep(6)
