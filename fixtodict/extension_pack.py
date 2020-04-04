@@ -1,7 +1,7 @@
 from xml.etree.ElementTree import Element
 import jsonpatch
 
-from .basic_repository_v1 import (
+from .xml_logic import (
     xml_to_abbreviation,
     xml_to_component,
     xml_to_datatype,
