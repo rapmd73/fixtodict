@@ -16,7 +16,6 @@ from ..patch import apply_patch
 
 @cli.command()
 @click.argument("src", nargs=1, type=click.Path(exists=True))
-@opt_patch("patches")
 def repo(src, patches):
     """
     Transform original FIX Repository data into JSON.
@@ -68,8 +67,5 @@ def repo(src, patches):
         sections=read_xml_root(src, "Sections.xml"),
     )
     data["meta"]["fixtodict"]["md5"] = dirhash(src, "md5")
-    validate_v1(data)
-    for p in patches:
-        data = apply_patch(data, jsonpatch.JsonPatch(read_json(p)))
     validate_v1(data)
     print(json.dumps(data, indent=DEFAULT_INDENT))
