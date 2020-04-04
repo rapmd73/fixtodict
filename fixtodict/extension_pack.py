@@ -69,7 +69,9 @@ class ExtensionPack:
 
     def get_update_as_jsonpatch(self, resource_kind, key):
         data = []
-        for (c_key, c_value) in self.changes_updated[resource_kind][key].items():
+        for (c_key, c_value) in self.changes_updated[resource_kind][
+            key
+        ].items():
             data.append(
                 {
                     "op": "replace",
@@ -99,5 +101,7 @@ class ExtensionPack:
                 data += self.get_deprecation_as_jsonpatch(kind, key)
             for key in self.changes_removed[kind].keys():
                 data += self.get_removal_as_jsonpatch(kind, key)
-        data.append({"op": "add", "path": "/version/ep/-", "value": self.id})
+        data.append(
+            {"op": "add", "path": "/meta/version/ep/-", "value": self.id}
+        )
         return jsonpatch.JsonPatch(data)

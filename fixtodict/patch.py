@@ -1,10 +1,13 @@
-from jsonpatch import JsonPatch
+from jsonpatch import JsonPatch, JsonPatchException
 
 from .schema import validate_v1
 
 
 def apply_patch(data, patch: JsonPatch):
     validate_v1(data)
-    data = patch.apply(data, in_place=True)
+    try:
+        data = patch.apply(data)
+    except Exception as e:
+        print(e)
     # TODO: meta and history stuff.
     return data

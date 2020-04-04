@@ -271,11 +271,13 @@ def xml_to_msg_content(root: Element):
 def xml_to_datatype(root: Element):
     return (
         root.get("Name") or root.find("Name").text,
-        filter_none({
-            "base": root.findtext("Base"),
-            "docs": xml_get_docs(root, examples=True, body=True),
-            "history": xml_get_history(root),
-        }),
+        filter_none(
+            {
+                "base": root.findtext("Base"),
+                "docs": xml_get_docs(root, examples=True, body=True),
+                "history": xml_get_history(root),
+            }
+        ),
     )
 
 
