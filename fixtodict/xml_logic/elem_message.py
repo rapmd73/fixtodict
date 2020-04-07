@@ -20,7 +20,6 @@ def xml_to_message(root):
             "name": get_fuzzy(root, "Name"),
             "contents": xml_to_refs(root),
             "category": get_fuzzy(root, "Category", "CategoryID"),
-            "section": get_fuzzy(root, "Section", "SectionID"),
             "fixml": {
                 "optional": (lambda x: bool(int(x)) if x is not None else None)(
                     get_fuzzy(root, "NotReqXML")
@@ -33,10 +32,16 @@ def xml_to_message(root):
 
 
 def xml_to_refs(root):
-    component_id = get_fuzzy(root, "id", "ComponentID")
-    data = {}
-    for child in root:
-        pass
+    data = []
+    for child in root.find("structure"):
+        data.append(
+            {
+                "id": get_fuzzy(child, "id"),
+                "docs": xml_get_docs(root, body=True),
+                "history": xml_get_history(root),
+            }
+        )
+    return data
 
 
 def embed_msg_contents_into_message(message, msg_contents):

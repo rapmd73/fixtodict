@@ -50,7 +50,8 @@ def transform_basic_repository_v1(
     msg_contents: Element,
     sections: Element,
 ):
-    fix_version = FixVersion.create_from_xml_attrs(messages.attrib, "version").data
+    fix_version = FixVersion.create_from_xml_attrs(
+        messages.attrib, "version").data
     abbreviations = xml_to_abbreviations(abbreviations)
     categories = xml_to_categories(categories)
     components = xml_to_components(components)
@@ -130,6 +131,7 @@ def transform_orchestra_v1(root: Element):
     categories = xml_to_categories(root.find("categories"))
     components = xml_to_components(root.find("components"))
     datatypes = xml_to_datatypes(root.find("datatypes"))
+    enums = xml_to_enums(root.finds("codesets"))  # FIXME
     fields = xml_to_fields(root.find("fields"))
     messages = xml_to_messages(root.find("messages"))
     sections = xml_to_sections(root.find("sections"))
