@@ -25,9 +25,7 @@ def xref(old, new):
     ]:
 
         def log(op, key):
-            return print(
-                "-- New [{}] diff for kind {}: {}".format(op, kind, key)
-            )
+            return print("-- New [{}] diff for kind {}: {}".format(op, kind, key))
 
         for (key, value) in new[kind].items():
             if key not in old[kind]:

@@ -43,6 +43,7 @@ setup(
     install_requires=[
         "nltk==3.4.5",
         "click",
+        "natsort==7.0.1",
         "checksumdir==1.1.7",
         "setuptools>=41",
         "dict-recursive-update==1.0.1",

@@ -4,6 +4,7 @@ from .utils import (
     xml_get_docs,
     xml_get_history,
     filter_none,
+    get_fuzzy,
 )
 
 
@@ -14,11 +15,11 @@ def xml_to_fields(root):
 def xml_to_field(root):
     return (
         # Primary key.
-        root.findtext("Tag") or root.get("id"),
+        get_fuzzy(root, "id", "tag"),
         filter_none(
             {
-                "name": root.findtext("Name") or root.get("name"),
-                "datatype": root.findtext("Type") or root.get("type"),
+                "name": get_fuzzy(root, "name"),
+                "datatype": get_fuzzy(root, "type"),
                 "enum": xml_get_enum(root),
                 "docs": xml_get_docs(root, body=True, elaboration=True),
                 "history": xml_get_history(root),
@@ -29,8 +30,8 @@ def xml_to_field(root):
 
 def xml_get_enum(root):
     if len(root.findall("enum")) == 0:
-        return root.findtext("EnumDatatype")
-    return [xml_get_enum(child) for child in root]
+        return get_fuzzy(root, "EnumDatatype")
+    return [xml_to_enum(child) for child in root]
 
 
 def embed_enums_into_field(field, enums):

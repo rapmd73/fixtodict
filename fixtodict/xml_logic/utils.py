@@ -1,8 +1,38 @@
+from natsort import natsorted
+
 from ..fix_version import FixVersion
 
 
+def get_fuzzy(elem, *keys):
+    for key in list(keys):
+        lower = key[0].lower() + key[1:]
+        upper = key[0].upper() + key[1:]
+        result = (
+            elem.findtext(lower)
+            or elem.findtext(upper)
+            or elem.get(lower)
+            or elem.get(upper)
+        )
+        if result is not None:
+            return result
+
+
 def filter_none(data):
-    return {k: v for k, v in data.items() if v is not None}
+    return {k: v for (k, v) in data.items() if v is not None}
+
+
+def xml_get_docs(
+    root, body=False, usage=False, volume=False, elaboration=False, examples=False,
+):
+    data = {}
+    data["$id"] = root.get("textId")
+    data["description"] = root.findtext("Description")
+    data["usage"] = root.findtext("Usage")
+    data["volume"] = root.findtext("Volume") or root.get("volume")
+    data["elaboration"] = root.findtext("Elaboration")
+    if examples:
+        data["examples"] = [c.text for c in root.findall("Example")]
+    return filter_none(data)
 
 
 def xml_get_history(root, replaced=False):
@@ -21,38 +51,8 @@ def xml_get_history(root, replaced=False):
     return filter_none(data)
 
 
-def xml_get_docs(
-    root,
-    body=False,
-    usage=False,
-    volume=False,
-    elaboration=False,
-    examples=False,
-):
-    data = {}
-    if root.get("textId") is not None:
-        return root.get("textId")
-    if body:
-        data["description"] = root.findtext("Description")
-    if usage:
-        data["usage"] = root.findtext("Usage")
-    if volume:
-        data["volume"] = root.findtext("Volume")
-    if elaboration:
-        data["elaboration"] = root.findtext("Elaboration")
-    if examples:
-        data["examples"] = [c.text for c in root.findall("Example")]
-    return filter_none(data)
-
-
-def xml_get_component_type(root):
-    return str.lower(
-        root.get("componentType") or root.findtext("ComponentType")
-    )
-
-
 def xml_to_sorted_dict(root, f):
     if root is None:
         root = []
-    data = sorted([f(c) for c in root], key=lambda x: str.lower(x[0]))
+    data = natsorted([f(c) for c in root])
     return {k: v for (k, v) in data}

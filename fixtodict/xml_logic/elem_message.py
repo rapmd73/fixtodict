@@ -3,6 +3,7 @@ from .utils import (
     xml_get_docs,
     xml_get_history,
     filter_none,
+    get_fuzzy,
 )
 
 
@@ -13,16 +14,17 @@ def xml_to_messages(root):
 def xml_to_message(root):
     return (
         # Primary key.
-        root.get("msgType") or root.findtext("MsgType"),
+        get_fuzzy(root, "msgType"),
         {
-            "name": root.get("name") or root.findtext("Name"),
-            "component": root.get("id") or root.findtext("ComponentID"),
-            "category": root.get("category") or root.findtext("CategoryID"),
-            "section": root.get("section") or root.findtext("SectionID"),
+            "$component": get_fuzzy(root, "id", "ComponentID"),
+            "name": get_fuzzy(root, "Name"),
+            "contents": xml_to_refs(root),
+            "category": get_fuzzy(root, "Category", "CategoryID"),
+            "section": get_fuzzy(root, "Section", "SectionID"),
             "fixml": {
-                "optional": bool(
-                    int(root.get("notReqXML") or root.findtext("NotReqXML"))
-                )
+                "optional": (lambda x: bool(int(x)) if x is not None else None)(
+                    get_fuzzy(root, "NotReqXML")
+                ),
             },
             "docs": xml_get_docs(root, body=True, elaboration=True),
             "history": xml_get_history(root),
@@ -30,6 +32,13 @@ def xml_to_message(root):
     )
 
 
+def xml_to_refs(root):
+    component_id = get_fuzzy(root, "id", "ComponentID")
+    data = {}
+    for child in root:
+        pass
+
+
 def embed_msg_contents_into_message(message, msg_contents):
-    message["contents"] = msg_contents[message["component"]]
-    del message["component"]
+    message["contents"] = msg_contents[message["$component"]]
+    del message["$component"]

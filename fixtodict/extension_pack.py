@@ -14,12 +14,7 @@ from .xml_logic import (
 class ExtensionPack:
 
     RESOURCE_RECIPES = [
-        [
-            "abbreviations",
-            "Abbreviations",
-            "Abbreviation",
-            xml_to_abbreviation,
-        ],
+        ["abbreviations", "Abbreviations", "Abbreviation", xml_to_abbreviation,],
         ["components", "Components", "Component", xml_to_component],
         ["datatypes", "Datatypes", "Datatype", xml_to_datatype],
         ["fields", "Fields", "Field", xml_to_field],
@@ -49,14 +44,10 @@ class ExtensionPack:
                 updated = child.find("Updates")
                 if added is not None:
                     for subchild in added.findall(recipe[2]):
-                        self.changes_added[kind].update(
-                            dict([recipe[3](subchild)])
-                        )
+                        self.changes_added[kind].update(dict([recipe[3](subchild)]))
                 if updated is not None:
                     for child in updated.findall(recipe[2]):
-                        self.changes_updated[kind].update(
-                            dict([recipe[3](child)])
-                        )
+                        self.changes_updated[kind].update(dict([recipe[3](child)]))
 
     def get_addition_as_jsonpatch(self, resource_kind, key):
         return [
@@ -69,9 +60,7 @@ class ExtensionPack:
 
     def get_update_as_jsonpatch(self, resource_kind, key):
         data = []
-        for (c_key, c_value) in self.changes_updated[resource_kind][
-            key
-        ].items():
+        for (c_key, c_value) in self.changes_updated[resource_kind][key].items():
             data.append(
                 {
                     "op": "replace",
@@ -101,7 +90,5 @@ class ExtensionPack:
                 data += self.get_deprecation_as_jsonpatch(kind, key)
             for key in self.changes_removed[kind].keys():
                 data += self.get_removal_as_jsonpatch(kind, key)
-        data.append(
-            {"op": "add", "path": "/meta/version/ep/-", "value": self.id}
-        )
+        data.append({"op": "add", "path": "/meta/version/ep/-", "value": self.id})
         return jsonpatch.JsonPatch(data)

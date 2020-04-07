@@ -19,6 +19,7 @@ from .xml_logic import (
     embed_msg_contents_into_message,
     embed_msg_contents_into_component,
 )
+from .xml_logic.utils import get_fuzzy
 
 
 def transform_basic_repository_v1(
@@ -32,7 +33,7 @@ def transform_basic_repository_v1(
     msg_contents: Element,
     sections: Element,
 ):
-    fix_version = FixVersion(messages.get("version")).data
+    fix_version = FixVersion(get_fuzzy(messages, "version")).data
     abbreviations = xml_to_abbreviations(abbreviations)
     categories = xml_to_categories(categories)
     components = xml_to_components(components)
@@ -42,6 +43,7 @@ def transform_basic_repository_v1(
     messages = xml_to_messages(messages)
     msg_contents = xml_to_msg_contents(msg_contents)
     sections = xml_to_sections(sections)
+    # Embeddings.
     for val in fields.values():
         embed_enums_into_field(val, enums)
     for val in messages.values():

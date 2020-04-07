@@ -11,7 +11,7 @@ from .xml_logic import (
     xml_to_categories,
     xml_to_components,
     xml_to_datatypes,
-    xml_to_phrases,
+    xml_to_docs_definitions,
     xml_to_enums,
     xml_to_fields,
     xml_to_messages,
@@ -33,7 +33,8 @@ def transform_unified_repository_v1(root: Element, phrases: Element):
     messages = xml_to_messages(root.find("messages"))
     sections = xml_to_sections(root.find("sections"))
     fix_version = FixVersion.create_from_xml_attrs(root.attrib, "version").data
-    phrases = xml_to_phrases(phrases)
+    phrases = xml_to_docs_definitions(phrases)
+    # Embed docstrings into elements.
     embed_docs(abbreviations, phrases)
     embed_docs(categories, phrases)
     embed_docs(components, phrases)
@@ -41,6 +42,8 @@ def transform_unified_repository_v1(root: Element, phrases: Element):
     embed_docs(fields, phrases)
     embed_docs(messages, phrases)
     embed_docs(sections, phrases)
+    # No other embeddings to worry about. The Unified FIX Repository contains
+    # hierarchial data already.
     return {
         "meta": {
             "schema": "1",

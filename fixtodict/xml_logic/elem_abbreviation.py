@@ -1,4 +1,4 @@
-from .utils import xml_to_sorted_dict, xml_get_docs, xml_get_history
+from .utils import xml_to_sorted_dict, xml_get_history, xml_get_docs, get_fuzzy
 
 
 def xml_to_abbreviations(root):
@@ -8,10 +8,10 @@ def xml_to_abbreviations(root):
 def xml_to_abbreviation(root):
     return (
         # Primary key.
-        root.get("abbrTerm") or root.findtext("AbbrTerm"),
+        get_fuzzy(root, "abbrTerm"),
         {
-            "term": root.get("term") or root.findtext("Term"),
-            "docs": xml_get_docs(root, usage=True),
+            "term": get_fuzzy(root, "term"),
+            "docs": xml_get_docs(root),
             "history": xml_get_history(root),
         },
     )

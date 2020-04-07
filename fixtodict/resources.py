@@ -26,7 +26,5 @@ def test_cases(tag):
             json_string = pkg_resources.resource_string(
                 PKG_NAME, "resources/tests/{}/{}.json".format(tag, base)
             )
-            data.append(
-                (ElementTree.fromstring(xml_string), json.loads(json_string))
-            )
+            data.append((ElementTree.fromstring(xml_string), json.loads(json_string)))
     return data
